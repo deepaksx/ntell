@@ -220,6 +220,13 @@
     const pos = { x: 0, y: 0, r: 0, live: false, home: 1 };
     const drag = { on: false, x: 0, y: 0, vx: 0, vy: 0, moved: 0, used: false };
     let onTap = null;
+    // where a sticky heading rests, read once per layout
+    const sticks = new Map();
+    window.addEventListener('resize', () => sticks.clear());
+    const stickTop = (head) => {
+      if (!sticks.has(head)) { const cs = getComputedStyle(head); sticks.set(head, cs.position === 'sticky' ? parseFloat(cs.top) || 0 : null); }
+      return sticks.get(head);
+    };
 
     // drag to turn the orb, with a little momentum when it is let go
     if (!reduce && stage) {
@@ -238,10 +245,11 @@
         orb.roll(dx, dy, Math.max(pos.r * 0.6, 40));
         if (!drag.used && drag.moved > 14) { drag.used = true; if (hint) hint.classList.remove('is-on'); }
       });
-      const end = () => {
+      const end = (e) => {
         if (!drag.on) return;
         drag.on = false; stage.classList.remove('is-dragging');
-        if (drag.moved < 6 && onTap) { drag.vx = 0; drag.vy = 0; onTap(pos.x, pos.y); orb.spin([0.2, 1, 0.1], 0.5); }
+        // a cancelled touch means the page took the gesture to scroll: that is not a tap
+        if (e.type === 'pointerup' && drag.moved < 6 && onTap) { drag.vx = 0; drag.vy = 0; onTap(pos.x, pos.y); orb.spin([0.2, 1, 0.1], 0.5); }
       };
       stage.addEventListener('pointerup', end);
       stage.addEventListener('pointercancel', end);
@@ -263,7 +271,12 @@
       anchors().forEach((a) => {
         const r = a.node.getBoundingClientRect();
         if (!r.width && !r.height) return;
-        A.push(a); P.push({ x: r.left + r.width / 2, y: r.top + r.height / 2, s: Math.max(r.width, r.height) * a.k });
+        const pt = { x: r.left + r.width / 2, y: r.top + r.height / 2, s: Math.max(r.width, r.height) * a.k, rel: relY };
+        // a heading that sticks holds the orb for as long as it is stuck: the orb leaves only when the heading does
+        const head = a.node.closest('.chapter__head');
+        const top = head ? stickTop(head) : null;
+        if (top !== null) pt.rel = Math.min(relY, top + (pt.y - head.getBoundingClientRect().top) - 0.5);
+        A.push(a); P.push(pt);
       });
       const n = P.length; if (!n) return;
       const v = [], u = [];
@@ -277,9 +290,10 @@
           v[i] = 1 - clamp((P[i].y - c) / D);
         }
         if (A[i].mode === 'stage') u[i] = clamp(sy / (vh * 0.55));
-        else u[i] = A[i + 1] && A[i + 1].mode === 'direct' ? 0 : clamp((relY - P[i].y) / D);
+        else u[i] = A[i + 1] && A[i + 1].mode === 'direct' ? 0 : clamp((P[i].rel - P[i].y) / D);
       }
       st.stageU = A[0].mode === 'stage' ? u[0] : 1;
+      if (stage) stage.classList.toggle('is-away', st.stageU > 0.3);
       let k = 0;
       for (let i = n - 1; i > 0; i--) { if (v[i] > 0) { k = i; break; } }
 
@@ -301,7 +315,10 @@
         p = mix(from, P[k], ev);
         railness = eu * (1 - ev); st.dockedAt = -1;
       }
-      const home = A[0].mode === 'stage' ? clamp(p.s / Math.max(1, P[0].s)) : 0;
+      // how much of its hero size the orb still has; only counted while it is on, or leaving, the stage,
+      // so the field belongs to the hero and never comes back when the orb grows again further down
+      const nearStage = A[0].mode === 'stage' && (k === 0 || (k === 1 && v[1] < 1));
+      const home = nearStage ? clamp(p.s / Math.max(1, P[0].s)) : 0;
       st.hover += (st.hoverT * (st.stageU < 0.05 ? 1 : 0) - st.hover) * 0.12;
       p.s *= st.pop * (1 + 0.035 * st.hover + (drag.on ? 0.02 : 0));
 
@@ -821,7 +838,15 @@
     };
     if (reduce) { setState(1); return; }
     reveals(sec);
-    ScrollTrigger.create({ trigger: canvas, start: 'top 85%', once: true, onEnter: () => gsap.to(viz.state, { appear: 1, duration: 1.6, ease: 'power2.out' }) });
+    const legend = $('.shift__legend', sec);
+    if (legend) gsap.set(legend, { autoAlpha: 0 });
+    ScrollTrigger.create({
+      trigger: canvas, start: 'top 85%', once: true,
+      onEnter: () => {
+        gsap.to(viz.state, { appear: 1, duration: 1.6, ease: 'power2.out' });
+        if (legend) gsap.to(legend, { autoAlpha: 1, duration: 0.9, delay: 0.5 });
+      }
+    });
     mq.add({ desk: DESK, mob: MOB }, (ctx) => {
       const desk = ctx.conditions.desk;
       const tl = gsap.timeline({
@@ -1168,12 +1193,12 @@
     // sections are initialised top to bottom so pinned scenes measure correctly
     initAbout();
     initWhat();
-    initShift();
-    initGap();
-    initBring();
     initIndustries();
     initWork();
     initIndustriesRest();
+    initShift();
+    initGap();
+    initBring();
     initEngage();
     initDeliver();
     initWho();
@@ -1210,6 +1235,11 @@
     };
 
     gsap.set(loader, { clipPath: 'inset(0 0 0% 0)' });
+    // the animation plays on every load; the button and Escape are there for anyone in a hurry
+    const skipNow = () => { if (lifted) return; video.pause(); lift(true); };
+    const skipBtn = $('#loaderSkip');
+    if (skipBtn) skipBtn.addEventListener('click', skipNow);
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') skipNow(); });
 
     // play the supplied sting from the first frame of the mark to the full wordmark
     const END = 3.45;

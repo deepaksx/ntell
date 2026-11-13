@@ -34,17 +34,17 @@ assets/vendor/          GSAP 3.13 (core, ScrollTrigger, SplitText) and Lenis 1.3
 1. Hero: "We build the AI-native enterprise", with the signal orb in its field
 2. Who we are: one partner for AI transformation, mission and values
 3. What we do: advise, build, equip, embed
-4. What is changing, and the gap
-5. How we work: bespoke deployment, strategic partnership, change management
-6. Industries, one chapter each, with the capabilities and the ntell products
-   that belong there:
+4. Industries, one chapter each, with the capabilities and what we bring to
+   them (a solid tag names an ntell product, an outlined tag is bespoke work):
    - Fintech and financial services (payments, core banking, fraud, risk,
      modelling, decisioning, reporting, data sharing, AI governance), with the
      Portfolio 360°, Model Studio and Arbiter product gallery inside it
-   - Government and public services
+   - Government services
    - FMCG and consumer
    - M&A and value creation
    - AI transformation
+5. What is changing, and the gap
+6. How we work: bespoke deployment, strategic partnership, change management
 7. How we engage: five stages
 8. How we deliver, and where we operate
 9. Team (placeholders) and contact
@@ -58,11 +58,14 @@ gallery keep their own colours. Tokens live at the top of `css/style.css`.
 
 ## Motion
 
-Everything is progressive. With JavaScript off, or with reduced motion
-requested, the page is complete and static.
+Everything is progressive. With reduced motion requested the page is complete
+and static. With JavaScript off it is readable from top to bottom with a solid
+nav; the two scenes that only exist as script (the organisation chart and the
+adoption dots) are left out.
 
 - **Opening sting**: the supplied logo animation plays on every load, then the
-  page lifts in. It is skipped only if the video cannot start within a moment.
+  page lifts in. "Skip intro" or Escape ends it early; it is skipped on its own
+  only if the video cannot start within a moment.
 - **The signal orb**: the logo's orb, drawn as a real sphere on a canvas so its
   six-circle pattern turns in 3D. It sits large in the hero, rolls with the
   scroll, lands on the full stop of each chapter heading, rides a rail at the
