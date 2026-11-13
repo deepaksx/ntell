@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ntell.ai — Intelligent insights, smarter decisions</title>
-<meta name="description" content="ntell builds and delivers fintech and AI products and services for institutions across the Middle East, Europe and Asia-Pacific. Headquartered in Dubai.">
+<title>ntell.ai — AI transformation, across industries</title>
+<meta name="description" content="ntell is an AI transformation company. We work with banks and fintechs, governments, consumer goods companies and investors to find where AI creates value, build it in, and stay until it is in daily use.">
 <meta name="theme-color" content="#F4F4F6">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ntell.ai">
-<meta property="og:title" content="ntell.ai — Intelligent insights, smarter decisions">
-<meta property="og:description" content="Fintech and AI products and services for institutions across the Middle East, Europe and Asia-Pacific. Your partner in AI-led value creation.">
+<meta property="og:title" content="ntell.ai — AI transformation, across industries">
+<meta property="og:description" content="AI transformation across financial services, government, FMCG and M&amp;A. Strategy, products and the change that makes them stick.">
 <meta property="og:url" content="https://ntell.ai/">
 <meta property="og:image" content="https://ntell.ai/assets/img/og.png">
 <meta property="og:image:width" content="1200">
@@ -85,6 +85,7 @@
 
 <!-- The signal orb: one 3D ball that rolls with the scroll and travels the page -->
 <div class="signal" id="signal" aria-hidden="true"><canvas id="signalCanvas" width="800" height="800"></canvas></div>
+<canvas class="rays" id="flowCanvas" aria-hidden="true"></canvas>
 <div class="rail" id="rail" aria-hidden="true"><span class="rail__track"></span><span class="rail__label" id="railLabel"></span></div>
 
 <a class="skip" href="#main">Skip to content</a>
@@ -97,8 +98,8 @@
     <nav class="nav__links" aria-label="Primary">
       <a href="#about">About</a>
       <a href="#what">What we do</a>
+      <a href="#approach">How we work</a>
       <a href="#industries">Industries</a>
-      <a href="#work">Work</a>
       <a href="#engage">How we engage</a>
     </nav>
     <a class="btn btn--sm nav__cta" href="#contact"><span>Start a conversation</span></a>
@@ -110,36 +111,35 @@
   <nav class="menu__links" aria-label="Mobile">
     <a href="#about">About</a>
     <a href="#what">What we do</a>
+    <a href="#approach">How we work</a>
     <a href="#industries">Industries</a>
-    <a href="#work">Work</a>
     <a href="#engage">How we engage</a>
     <a href="#contact"><em>Start a conversation</em></a>
   </nav>
-  <p class="menu__foot cap">contact@ntell.ai · Dubai, UAE</p>
+  <p class="menu__foot cap">contact@ntell.ai</p>
 </div>
 
 <main id="main">
 
 <!-- 01 · HERO -->
 <section class="hero" id="top" data-rail="ntell.ai">
-  <canvas class="hero__canvas" id="heroCanvas" aria-hidden="true"></canvas>
   <div class="wrap hero__inner">
     <div class="hero__text">
-      <p class="label hero__label">Fintech and AI · Dubai</p>
+      <p class="label hero__label">AI transformation, across industries</p>
       <h1 class="hero__title">
-        <span class="hero__line"><span class="hero__line-in">Intelligent</span></span>
-        <span class="hero__line"><span class="hero__line-in">insights,</span></span>
-        <span class="hero__line"><span class="hero__line-in"><em>smarter decisions.</em></span></span>
+        <span class="hero__line"><span class="hero__line-in">We build</span></span>
+        <span class="hero__line"><span class="hero__line-in">the AI-native</span></span>
+        <span class="hero__line"><span class="hero__line-in"><em>enterprise.</em></span></span>
       </h1>
-      <p class="hero__lede">ntell builds and delivers fintech and AI products and services for institutions across the Middle East, Europe and Asia-Pacific. We work as your partner in value creation: we find where AI pays, build it into the way you run, and stay until it is in daily use.</p>
+      <p class="hero__lede">ntell is an AI transformation company. We work with banks and fintechs, governments, consumer goods companies and investors to find where AI creates value, build it into the way they run, and stay until it is in daily use.</p>
       <div class="hero__cta">
         <a class="btn" href="#contact"><span>Start a conversation</span><svg class="btn__arrow" viewBox="0 0 20 20"><use href="#i-arrow"/></svg></a>
-        <a class="btn btn--ghost" href="#what"><span>See what we do</span></a>
+        <a class="btn btn--ghost" href="#industries"><span>See our industries</span></a>
       </div>
     </div>
-    <div class="hero__stage" id="heroStage" data-orb="stage" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#orb"/></svg></div>
+    <div class="hero__stage" id="heroStage" data-orb="stage" role="img" aria-label="The ntell signal orb. Drag to rotate it."><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#orb"/></svg><span class="hero__hint cap" id="heroHint" aria-hidden="true">Drag to spin</span></div>
     <div class="hero__meta cap">
-      <span>AI-led transformation</span><span>Change management</span><span>AI adoption</span><span>Bespoke agentic solutions</span>
+      <span>Financial services</span><span>Government</span><span>FMCG and consumer</span><span>M&amp;A and value creation</span>
       <span class="hero__scroll">Scroll <i></i></span>
     </div>
   </div>
@@ -151,44 +151,38 @@
     <div class="split-head">
       <div>
         <p class="label" data-reveal>Who we are</p>
-        <h2 class="h2" data-lines>Fintech and AI, <em>built as one</em><i class="dot" data-orb></i></h2>
+        <h2 class="h2" data-lines>One partner for AI transformation, <em>across industries</em><i class="dot" data-orb></i></h2>
       </div>
-      <p class="body" data-reveal>ntell builds and delivers financial-technology and artificial-intelligence products and services for institutions across the Middle East, Europe and Asia-Pacific. We are headquartered in Dubai, with regional branches planned.</p>
+      <p class="body" data-reveal>ntell helps institutions and enterprises put AI to work. We bring the strategy, the products and solutions, and the change that makes them stick, as one team that works inside your organisation.</p>
     </div>
 
     <ul class="trio">
       <li class="trio__item">
-        <svg class="trio__ico" viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="13" width="34" height="23" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 21h34M13 29h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="34" cy="29" r="2.4" fill="var(--accent)"/></svg>
-        <h3>Fintech products and services</h3>
-        <p>Digital financial products, and the platforms and services around them, designed for regulated, cross-border markets.</p>
+        <svg class="trio__ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M8 38l10-12 8 6 14-20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="40" cy="12" r="3" fill="var(--accent)"/><path d="M8 42h32" stroke="currentColor" stroke-width="1.2" opacity=".5" stroke-linecap="round"/></svg>
+        <h3>Strategy and transformation</h3>
+        <p>We find where AI creates value in your business, size it in your own numbers, and set the order to build it in.</p>
       </li>
       <li class="trio__item">
         <svg class="trio__ico" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="15" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="24" cy="16.5" r="7.5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55"/><circle cx="17.5" cy="27.8" r="7.5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55"/><circle cx="30.5" cy="27.8" r="7.5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55"/><circle cx="24" cy="24" r="2.4" fill="var(--accent)"/></svg>
-        <h3>AI products and services</h3>
-        <p>Applied AI, from intelligence embedded in financial workflows to standalone AI products and advisory.</p>
+        <h3>Products and solutions</h3>
+        <p>We build the agents, models and platforms, inside your systems and on your data, tailored to how you really work.</p>
       </li>
       <li class="trio__item">
-        <svg class="trio__ico" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="15" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 24h30M24 9c-6 5-6 25 0 30M24 9c6 5 6 25 0 30" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55"/><circle cx="30" cy="20" r="2.6" fill="var(--accent)"/></svg>
-        <h3>Regional-first, led from Dubai</h3>
-        <p>A Dubai headquarters, with branches planned close to the markets we serve.</p>
+        <svg class="trio__ico" viewBox="0 0 48 48" aria-hidden="true"><circle cx="14" cy="16" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="34" cy="16" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="24" cy="33" r="4.5" fill="var(--accent)"/><path d="M17.5 19.5l4 9M30.5 19.5l-4 9M19 16h10" stroke="currentColor" stroke-width="1.2" opacity=".55" stroke-linecap="round"/></svg>
+        <h3>Adoption and change</h3>
+        <p>We stay until your teams use it every day, with the training, incentives and tracking that make the change last.</p>
       </li>
     </ul>
 
-    <dl class="facts">
-      <div data-reveal><dt class="cap">Where we are</dt><dd>Built in Dubai</dd><dd class="facts__sub">Headquarters in the UAE</dd></div>
-      <div data-reveal><dt class="cap">Products</dt><dd>Eight on the roadmap</dd><dd class="facts__sub">Foundation products first</dd></div>
-      <div data-reveal><dt class="cap">Presence</dt><dd>Regional branches planned</dd><dd class="facts__sub">UK, Singapore, APAC, Iraq, UAE</dd></div>
-    </dl>
-
     <div class="mission">
       <p class="label" data-reveal>Our mission</p>
-      <p class="mission__text" id="mission">To design, build and operate fintech and AI products and services that turn <em>complex data into clear insight,</em> giving institutions faster, better-informed decisions and customers simpler, safer financial experiences.</p>
+      <p class="mission__text" id="mission">To turn <em>complex data into clear insight,</em> so that institutions decide faster and better, and the people they serve get simpler, safer experiences.</p>
     </div>
 
     <ul class="values">
       <li><h3>Insight first</h3><p>We start from the decision a client has to make, and work back to the data and the model.</p></li>
-      <li><h3>Trust by design</h3><p>Security, privacy and compliance are built into every product, not added afterwards.</p></li>
-      <li><h3>Local where it matters</h3><p>Regulation, language and business culture differ by market. Our branches exist to respect that.</p></li>
+      <li><h3>Trust by design</h3><p>Security, privacy and compliance are built into everything we make, not added afterwards.</p></li>
+      <li><h3>Local where it matters</h3><p>Regulation, language and business culture differ by market. We work close to each one.</p></li>
       <li><h3>Partners, not vendors</h3><p>Senior partners stay close to every engagement and answer for its outcome.</p></li>
     </ul>
   </div>
@@ -200,41 +194,38 @@
     <div class="split-head">
       <div>
         <p class="label" data-reveal>What we do</p>
-        <h2 class="h2" data-lines>Two disciplines, <em>one platform mindset</em><i class="dot" data-orb></i></h2>
+        <h2 class="h2" data-lines>From a first idea <em>to systems in daily use</em><i class="dot" data-orb></i></h2>
       </div>
-      <p class="body" data-reveal>Financial products generate the data, and AI turns it into better products and decisions.</p>
+      <p class="body" data-reveal>Four kinds of work, usually delivered together. You can start with any one of them.</p>
     </div>
 
-    <div class="duo" id="duo">
-      <div class="duo__col duo__col--a">
-        <p class="cap duo__tag">Fintech</p>
-        <h3 class="h3">Financial technology products and services</h3>
-        <p class="body">Digital products, and the services to launch, integrate and run them, for banks, financial institutions and enterprises.</p>
-        <ul class="deflist">
-          <li><b>Payments and transactions</b><span>Digital payment and money-movement solutions.</span></li>
-          <li><b>Digital banking and lending</b><span>Customer-facing and back-office platforms.</span></li>
-          <li><b>Regtech and compliance</b><span>Onboarding, monitoring and reporting tools.</span></li>
-          <li><b>Integration and advisory</b><span>Connecting products to core systems and markets.</span></li>
-        </ul>
-      </div>
-      <div class="venn" aria-hidden="true">
-        <span class="venn__c venn__c--a"><i class="cap">Fintech</i></span>
-        <span class="venn__c venn__c--b"><i class="cap">AI</i></span>
-        <span class="venn__core cap">One shared core</span>
-      </div>
-      <div class="duo__col duo__col--b">
-        <p class="cap duo__tag">Artificial intelligence</p>
-        <h3 class="h3">AI products and services</h3>
-        <p class="body">Applied AI that is accurate, explainable and built into the workflows where decisions are actually made.</p>
-        <ul class="deflist">
-          <li><b>AI-native products</b><span>Our own products, powered by modern models.</span></li>
-          <li><b>Decision intelligence</b><span>Analytics and forecasting for finance and risk.</span></li>
-          <li><b>Automation and agents</b><span>AI agents that take work off teams.</span></li>
-          <li><b>AI advisory and delivery</b><span>Strategy, build and governance for clients.</span></li>
-        </ul>
-      </div>
-    </div>
-    <ul class="chips chips--row traits"><li>Cross-border</li><li>Regulated markets</li><li>API-first</li><li>Explainable</li><li>Secure by design</li><li>Human-in-the-loop</li></ul>
+    <ul class="lines" id="lines">
+      <li class="lineitem">
+        <p class="cap lineitem__k">Advise</p>
+        <h3>AI strategy and transformation</h3>
+        <p>The plan: where to play, what it is worth and what to build first.</p>
+        <ul><li>Opportunity mapping and business cases</li><li>Operating model and organisation redesign</li><li>Roadmaps owned by your leadership</li></ul>
+      </li>
+      <li class="lineitem">
+        <p class="cap lineitem__k">Build</p>
+        <h3>Bespoke AI solutions</h3>
+        <p>Working software, built around your workflows and exceptions.</p>
+        <ul><li>Agents that take work off teams</li><li>Decision intelligence and forecasting</li><li>Assistants grounded in your own knowledge</li></ul>
+      </li>
+      <li class="lineitem">
+        <p class="cap lineitem__k">Equip</p>
+        <h3>Products and platforms</h3>
+        <p>Our own products, deployed on your cloud or on-prem.</p>
+        <ul><li>A data and AI platform as the foundation</li><li>Secure GenAI for regulated settings</li><li>Industry solutions on top</li></ul>
+      </li>
+      <li class="lineitem">
+        <p class="cap lineitem__k">Embed</p>
+        <h3>Adoption and governance</h3>
+        <p>The change around the technology, so the value is real.</p>
+        <ul><li>Change management and training</li><li>AI governance and model risk</li><li>Value tracked against agreed measures</li></ul>
+      </li>
+    </ul>
+    <ul class="chips chips--row traits"><li>Explainable</li><li>Secure by design</li><li>Human-in-the-loop</li><li>API-first</li><li>Built for regulated markets</li><li>Cross-border</li></ul>
   </div>
 </section>
 
@@ -369,7 +360,7 @@
       <div class="pillar__main">
         <p class="pillar__tag cap">Regulated, explainable, outcome-led</p>
         <h3 class="pillar__title">What sets us <em>apart</em></h3>
-        <p class="pillar__line">Designed for institutions that need AI and fintech to work inside real regulatory and operational constraints.</p>
+        <p class="pillar__line">Designed for organisations that need AI to work inside real regulatory and operational constraints.</p>
       </div>
       <ul class="apart">
         <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>AI-native from day one</b><span>founded in the AI era, not retrofitted</span></div></li>
@@ -383,398 +374,284 @@
   </div>
 </section>
 
-<!-- 07 · WHERE WE DRIVE VALUE -->
-<section class="value" id="value" data-rail="Where we drive value">
-  <div class="wrap">
-    <div class="split-head">
-      <div>
-        <p class="label" data-reveal>Where we drive value</p>
-        <h2 class="h2" data-lines>Both sides of the P&amp;L. <em>Every lever sized on your own numbers</em><i class="dot" data-orb></i></h2>
-      </div>
-      <p class="body" data-reveal>We look for growth and for a lower cost to serve at the same time. The levers below are where we typically find value. Which ones matter most for you is confirmed and sized in the first stage.</p>
-    </div>
-
-    <div class="bridges">
-      <figure class="bridge bridge--up" data-bridge>
-        <figcaption class="bridge__cap"><b>Revenue and growth</b><span class="cap">indexed · conceptual</span></figcaption>
-        <div class="bridge__rows">
-          <div class="brow brow--base" style="--from:0;--to:52"><div class="brow__k"><b>Today</b><span>your plan</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow" style="--from:52;--to:61"><div class="brow__k"><b>Acquire</b><span>sharper targeting, faster onboarding</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow" style="--from:61;--to:69"><div class="brow__k"><b>Retain</b><span>early signals on customers at risk</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow" style="--from:69;--to:77"><div class="brow__k"><b>Cross-sell</b><span>the next best offer across the base</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow" style="--from:77;--to:84"><div class="brow__k"><b>Price</b><span>pricing that follows risk and demand</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow" style="--from:84;--to:92"><div class="brow__k"><b>New lines</b><span>data and AI products of your own</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow brow--sum" style="--from:0;--to:92;--base:52"><div class="brow__k"><b>With AI</b><span>plan plus AI uplift</span></div><div class="brow__track"><i></i></div></div>
-        </div>
-      </figure>
-
-      <figure class="bridge bridge--down" data-bridge>
-        <figcaption class="bridge__cap"><b>Cost to serve and risk</b><span class="cap">indexed · conceptual</span></figcaption>
-        <div class="bridge__rows">
-          <div class="brow brow--base" style="--from:0;--to:92"><div class="brow__k"><b>Today</b><span>current cost to serve</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow" style="--from:82;--to:92"><div class="brow__k"><b>Operations</b><span>manual work taken out of core workflows</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow" style="--from:73;--to:82"><div class="brow__k"><b>Decisions</b><span>straight-through decisions on one engine</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow" style="--from:65;--to:73"><div class="brow__k"><b>Risk</b><span>earlier warnings, lower losses</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow" style="--from:58;--to:65"><div class="brow__k"><b>Cash</b><span>faster collections and close</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow" style="--from:51;--to:58"><div class="brow__k"><b>Scale</b><span>one setup reused across entities</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow brow--cost" style="--from:51;--to:56"><div class="brow__k"><b>AI run-cost</b><span>models, hosting and support</span></div><div class="brow__track"><i></i></div></div>
-          <div class="brow brow--sum" style="--from:0;--to:56;--base:56"><div class="brow__k"><b>With AI</b><span>net of AI run-cost</span></div><div class="brow__track"><i></i></div></div>
-        </div>
-      </figure>
-    </div>
-
-    <p class="sowhat" data-reveal><b>So what:</b> in the first stage we baseline each KPI on your own data. The value is sized in your numbers before the build begins. <span class="cap">Charts are conceptual and not to scale.</span></p>
-  </div>
-</section>
-
-<!-- 08 · INDUSTRIES -->
+<!-- 07 · INDUSTRIES -->
 <section class="inds" id="industries" data-rail="Industries">
   <div class="wrap">
     <div class="split-head">
       <div>
-        <p class="label" data-reveal>Where we work</p>
-        <h2 class="h2" data-lines>Industries we know <em>from the inside</em><i class="dot" data-orb></i></h2>
+        <p class="label" data-reveal>Industries</p>
+        <h2 class="h2" data-lines>Five industries, <em>one way of working</em><i class="dot" data-orb></i></h2>
       </div>
-      <p class="body" data-reveal>Each industry below lists where AI creates value and the ntell products and solutions we would bring to it.</p>
+      <p class="body" data-reveal>For each industry: where AI creates the most value today, and the ntell products and solutions we bring to it.</p>
     </div>
-
-    <div class="ind" id="ind" style="--n:5">
-      <article class="ind__panel is-active" data-ind="fs">
-        <button class="ind__tab" type="button" aria-expanded="true" aria-controls="ind-fs"><span class="ind__code cap">FS</span><span class="ind__name">Financial services</span><span class="ind__plus" aria-hidden="true"></span></button>
-        <div class="ind__body" id="ind-fs">
-          <div class="ind__intro">
-            <p class="ind__who cap">Banks · fintechs · insurers · exchange houses</p>
-            <h3 class="ind__title">Financial services</h3>
-            <p class="ind__line">Built around your data, your rules and your people.</p>
-            <a class="link" href="#work"><span>See the work</span><svg viewBox="0 0 20 20"><use href="#i-arrow"/></svg></a>
-          </div>
-          <div class="ind__cols">
-            <div>
-              <p class="ind__k cap">Where AI creates value</p>
-              <ul class="ind__list">
-                <li>Credit decisions and underwriting</li>
-                <li>Portfolio monitoring and early warning</li>
-                <li>Financial crime: AML, fraud and investigations</li>
-                <li>Payments and transaction intelligence</li>
-                <li>Regulatory and board reporting</li>
-                <li>AI governance and model risk</li>
-              </ul>
-            </div>
-            <div>
-              <p class="ind__k cap">Examples</p>
-              <ul class="chips"><li>Portfolio 360°</li><li>Model Studio</li><li>Arbiter</li><li>ntell GALLOP · financial crime</li><li>ntell SPRINT · payments</li><li>ntell REIN · AI governance</li></ul>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="ind__panel" data-ind="gov">
-        <button class="ind__tab" type="button" aria-expanded="false" aria-controls="ind-gov"><span class="ind__code cap">GOV</span><span class="ind__name">Government services</span><span class="ind__plus" aria-hidden="true"></span></button>
-        <div class="ind__body" id="ind-gov">
-          <div class="ind__intro">
-            <p class="ind__who cap">Ministries · regulators · public service providers</p>
-            <h3 class="ind__title">Government services</h3>
-            <p class="ind__line">Faster service for citizens, with full control of the data.</p>
-          </div>
-          <div class="ind__cols">
-            <div>
-              <p class="ind__k cap">Where AI creates value</p>
-              <ul class="ind__list">
-                <li>Citizen services and case handling</li>
-                <li>Licensing, permits and eligibility decisions</li>
-                <li>Drafting and summaries, in English and Arabic</li>
-                <li>Assistants for officers and for citizens</li>
-                <li>Supervision, inspection and audit support</li>
-                <li>Sovereign deployment, on your cloud or on-prem</li>
-              </ul>
-            </div>
-            <div>
-              <p class="ind__k cap">Examples</p>
-              <ul class="chips"><li>ntell SPEED · secure GenAI</li><li>ntell TROT · AI assistant</li><li>ntell STRIDE · no-code reporting</li><li>ntell REIN · AI governance</li></ul>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="ind__panel" data-ind="fmcg">
-        <button class="ind__tab" type="button" aria-expanded="false" aria-controls="ind-fmcg"><span class="ind__code cap">FMCG</span><span class="ind__name">FMCG and consumer</span><span class="ind__plus" aria-hidden="true"></span></button>
-        <div class="ind__body" id="ind-fmcg">
-          <div class="ind__intro">
-            <p class="ind__who cap">Manufacturers · distributors · consumer brands</p>
-            <h3 class="ind__title">FMCG and consumer</h3>
-            <p class="ind__line">Sharper decisions, from the plant to the shelf.</p>
-          </div>
-          <div class="ind__cols">
-            <div>
-              <p class="ind__k cap">Where AI creates value</p>
-              <ul class="ind__list">
-                <li>Demand forecasting and planning</li>
-                <li>Trade promotion and pricing</li>
-                <li>Distributor and route-to-market intelligence</li>
-                <li>Sales-force copilots and order capture</li>
-                <li>Management reporting across entities and countries</li>
-                <li>Order-to-cash, claims and back office</li>
-              </ul>
-            </div>
-            <div>
-              <p class="ind__k cap">Examples</p>
-              <ul class="chips"><li>ntell PACE · data and AI platform</li><li>ntell STRIDE · no-code reporting</li><li>ntell TROT · AI assistant</li><li>Bespoke agents</li></ul>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="ind__panel" data-ind="ma">
-        <button class="ind__tab" type="button" aria-expanded="false" aria-controls="ind-ma"><span class="ind__code cap">M&amp;A</span><span class="ind__name">M&amp;A and value creation</span><span class="ind__plus" aria-hidden="true"></span></button>
-        <div class="ind__body" id="ind-ma">
-          <div class="ind__intro">
-            <p class="ind__who cap">Owners · investors · acquirers · roll-ups</p>
-            <h3 class="ind__title">M&amp;A and value creation</h3>
-            <p class="ind__line">We make mid-size companies better, and worth more.</p>
-            <p class="ind__note">The best acquirers buy good companies and then improve them. We bring that discipline to mid-size businesses: we add value, lift the valuation and leave the company stronger than we found it.</p>
-          </div>
-          <div class="ind__cols">
-            <div>
-              <p class="ind__k cap">Where AI creates value</p>
-              <ul class="ind__list">
-                <li>The AI upside, sized during due diligence</li>
-                <li>A value plan for the first hundred days</li>
-                <li>Revenue growth and a lower cost to serve</li>
-                <li>One shared engine across a roll-up</li>
-                <li>New data and AI product lines</li>
-                <li>Exit readiness: earnings quality and embedded IP</li>
-              </ul>
-            </div>
-            <div>
-              <p class="ind__k cap">Examples</p>
-              <ul class="chips"><li>Opportunity map and business case</li><li>Shared engine and playbook</li><li>Value tracking for the board</li><li>ntell PACE · data and AI platform</li></ul>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="ind__panel" data-ind="ai">
-        <button class="ind__tab" type="button" aria-expanded="false" aria-controls="ind-ai"><span class="ind__code cap">AI</span><span class="ind__name">AI transformation</span><span class="ind__plus" aria-hidden="true"></span></button>
-        <div class="ind__body" id="ind-ai">
-          <div class="ind__intro">
-            <p class="ind__who cap">Leadership teams · any industry</p>
-            <h3 class="ind__title">AI transformation</h3>
-            <p class="ind__line">From a first use case to an AI-native operating model.</p>
-          </div>
-          <div class="ind__cols">
-            <div>
-              <p class="ind__k cap">Where we help</p>
-              <ul class="ind__list">
-                <li>AI strategy and opportunity mapping</li>
-                <li>Operating model and organisation redesign</li>
-                <li>Agentic workflows in core functions</li>
-                <li>Data foundations and governance</li>
-                <li>Capability building for your teams</li>
-                <li>Programme office and value tracking</li>
-              </ul>
-            </div>
-            <div>
-              <p class="ind__k cap">Examples</p>
-              <ul class="chips"><li>ntell PACE · data and AI platform</li><li>ntell SPEED · secure GenAI</li><li>Agent platforms and harnesses</li><li>Adoption playbooks</li></ul>
-            </div>
-          </div>
-        </div>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- 09 · WORK -->
-<section class="work" id="work" data-rail="Work">
-  <div class="wrap split-head">
-    <div>
-      <p class="label" data-reveal>Work · financial services</p>
-      <h2 class="h2" data-lines>What bespoke looks like. <em>Three products, one loop</em><i class="dot" data-orb></i></h2>
-    </div>
-    <p class="body" data-reveal>For lenders we built a connected risk suite on one data layer. Each product is tailored to the institution, runs on its own cloud or on-prem, and is owned by its teams.</p>
+    <nav class="indnav" aria-label="Industries">
+      <a href="#ind-fs"><span class="cap">FS</span>Fintech and financial services</a>
+      <a href="#ind-gov"><span class="cap">Gov</span>Government services</a>
+      <a href="#ind-fmcg"><span class="cap">FMCG</span>FMCG and consumer</a>
+      <a href="#ind-ma"><span class="cap">M&amp;A</span>M&amp;A and value creation</a>
+      <a href="#ind-ai"><span class="cap">AI</span>AI transformation</a>
+    </nav>
   </div>
 
-  <div class="work__pin" id="workPin">
-    <div class="work__track" id="workTrack">
+  <!-- Fintech and financial services -->
+  <article class="chapter" id="ind-fs" data-rail="Financial services">
+    <div class="wrap chapter__grid">
+      <header class="chapter__head">
+        <p class="cap chapter__who">Banks · fintechs · insurers · exchange houses</p>
+        <h3 class="chapter__title" data-lines>Fintech and financial services<i class="dot" data-orb></i></h3>
+        <p class="chapter__line" data-reveal>Built around your data, your rules and your people.</p>
+        <p class="body" data-reveal>From how money moves to how risk is judged. We build the platforms, the models and the decisions behind them, on your cloud or on-prem.</p>
+        <a class="link" href="#work" data-reveal><span>See the risk suite at work</span><svg viewBox="0 0 20 20"><use href="#i-arrow"/></svg></a>
+      </header>
+      <ul class="rows">
+        <li class="row"><h4>Payments</h4><p>Real-time and cross-border payments, with risk and credit signals scored on every transaction.</p><span class="tag">ntell SPRINT</span></li>
+        <li class="row"><h4>Core banking and lending</h4><p>Customer-facing and back-office platforms, connected to your core systems and markets.</p><span class="tag tag--plain">Bespoke build</span></li>
+        <li class="row"><h4>Fraud and financial crime</h4><p>AML, counter-terrorist financing and fraud, from the first alert to the filed report.</p><span class="tag">ntell GALLOP</span></li>
+        <li class="row"><h4>Risk management</h4><p>The whole book in one view, with early warnings and an analyst agent that explains the cause.</p><span class="tag">Portfolio 360°</span></li>
+        <li class="row"><h4>Modelling</h4><p>Every model built in-house on your data, watched for drift and retrained under governance.</p><span class="tag">Model Studio</span></li>
+        <li class="row"><h4>Credit and risk decisions</h4><p>Policy built, tested and shipped as a no-code flow by the risk team itself.</p><span class="tag">Arbiter</span></li>
+        <li class="row"><h4>Regulatory and board reporting</h4><p>Management, board and regulatory reports without code, refined in plain English.</p><span class="tag">ntell STRIDE</span></li>
+        <li class="row"><h4>Data sharing and open finance</h4><p>Financial data shared and monetised between institutions, under consent controls.</p><span class="tag">ntell CANTER</span></li>
+        <li class="row"><h4>AI governance and model risk</h4><p>A model inventory, explanations and an audit trail your regulator can test.</p><span class="tag">ntell REIN</span></li>
+      </ul>
+    </div>
 
-      <article class="prod prod--p360" data-prod>
-        <div class="prod__info">
-          <p class="prod__k cap">Case 01 · Risk intelligence</p>
-          <h3 class="prod__name"><svg class="prod__icon" viewBox="0 0 32 32"><use href="#i-p360"/></svg><span>Portfolio <em>360°</em></span></h3>
-          <p class="prod__line">A best-in-class risk analyst, always in your pocket.</p>
-          <p class="prod__body">The whole book in one view, before and after origination. AVA, the analyst agent, finds the cause behind a number and shows its working.</p>
-          <ul class="chips chips--dot"><li>Standard and custom analytics</li><li>Any cut, any segment</li><li>Insights in minutes</li><li>Knows your processes</li></ul>
-        </div>
-        <div class="prod__screen">
-          <div class="win win--p360">
-            <div class="win__bar"><svg class="win__icon" viewBox="0 0 32 32"><use href="#i-p360"/></svg><b>Portfolio 360°</b><span class="seg"><i class="on">Retail</i><i>SME</i><i>Corp</i></span><span class="mini mini--solid">Ask AVA</span></div>
-            <div class="kpis">
-              <div class="kpi"><small>30+ DPD</small><b>3.8%</b><em class="bad">+0.4 pp</em></div>
-              <div class="kpi"><small>90+ DPD</small><b>1.6%</b><em class="warn">+0.1 pp</em></div>
-              <div class="kpi"><small>Net loss</small><b>1.9%</b><em class="good">-0.2 pp</em></div>
-              <div class="kpi"><small>Roll B1 to B2</small><b>18.2%</b><em class="bad">+2.1 pp</em></div>
-              <div class="kpi"><small>Cure B1</small><b>71.2%</b><em class="bad">was 78.4%</em></div>
-              <div class="kpi"><small>Recovery</small><b>34%</b><em class="good">+3 pp</em></div>
+    <div class="suite" id="work">
+      <div class="wrap suite__head">
+        <p class="label" data-reveal>Inside the risk suite</p>
+        <h3 class="h2 h2--sm" data-lines>Three products on one data layer, <em>working as one loop.</em></h3>
+      </div>
+
+      <div class="work__pin" id="workPin">
+        <div class="work__track" id="workTrack">
+
+          <article class="prod prod--p360" data-prod>
+            <div class="prod__info">
+              <p class="prod__k cap">Case 01 · Risk intelligence</p>
+              <h3 class="prod__name"><svg class="prod__icon" viewBox="0 0 32 32"><use href="#i-p360"/></svg><span>Portfolio <em>360°</em></span></h3>
+              <p class="prod__line">A best-in-class risk analyst, always in your pocket.</p>
+              <p class="prod__body">The whole book in one view, before and after origination. AVA, the analyst agent, finds the cause behind a number and shows its working.</p>
+              <ul class="chips chips--dot"><li>Standard and custom analytics</li><li>Any cut, any segment</li><li>Insights in minutes</li><li>Knows your processes</li></ul>
             </div>
-            <div class="alert"><span class="alert__tag mono">Red alert</span><span class="alert__txt">Q2 personal loan cohorts are over appetite</span><span class="mini mini--soft">Ask AVA why</span></div>
-          </div>
-          <div class="chat">
-            <div class="chat__head"><span class="chat__ava"><img src="assets/img/ava.webp" alt="" width="760" height="869" loading="lazy"></span><b>AVA</b><span class="mono">AI risk analyst</span></div>
-            <p class="chat__q">Why did 30+ DPD rise in the Q2 personal loan cohorts?</p>
-            <ul class="chat__steps">
-              <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Read the static pools for every Q2 cohort</li>
-              <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Compared channels, segments and collection teams</li>
-              <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Isolated the accounts that drive the rise</li>
-            </ul>
-            <p class="chat__a">Most of the rise comes from a small set of accounts in two cohorts. Here is the cause, the evidence and the account list.</p>
-            <div class="chat__actions"><span class="mini mini--solid">Send to collections</span><span class="mini">Show accounts</span><span class="mini">Draft a rule in Arbiter</span></div>
-          </div>
-          <figure class="ava" aria-hidden="true">
-            <span class="ava__say">Ask me anything about the book.</span>
-            <img src="assets/img/ava.webp" alt="" width="760" height="869" loading="lazy">
-          </figure>
-        </div>
-      </article>
-
-      <article class="prod prod--ms" data-prod>
-        <div class="prod__info">
-          <p class="prod__k cap">Case 02 · Business operations</p>
-          <h3 class="prod__name"><svg class="prod__icon" viewBox="0 0 32 32"><use href="#i-ms"/></svg><span>Model Studio</span></h3>
-          <p class="prod__line">Build, test, deploy and govern every model in-house, on your own data.</p>
-          <p class="prod__body">One low-code studio from data to champion. Every live model is watched for drift, then retrained under governance your regulator can test.</p>
-          <ul class="chips chips--dot"><li>Acquisition</li><li>Underwriting</li><li>Pricing</li><li>Collections</li><li>Provisioning</li></ul>
-        </div>
-        <div class="prod__screen">
-          <div class="win win--ms">
-            <div class="win__bar"><svg class="win__icon" viewBox="0 0 32 32"><use href="#i-ms"/></svg><b>Model Studio</b><span class="win__crumb mono">Experiments · Retail</span></div>
-            <div class="ms">
-              <div class="ms__board">
-                <p class="ms__k mono">Leaderboard <span class="badge badge--teal">Champion</span></p>
-                <table class="tbl">
-                  <thead><tr><th>Model</th><th>AUC</th><th>Gini</th><th>KS</th></tr></thead>
-                  <tbody>
-                    <tr class="is-champ"><td>XGBoost v14</td><td>0.81</td><td>0.62</td><td>0.45</td></tr>
-                    <tr><td>LightGBM v9</td><td>0.80</td><td>0.60</td><td>0.43</td></tr>
-                    <tr><td>LogReg v6</td><td>0.77</td><td>0.54</td><td>0.39</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="ms__why">
-                <p class="ms__k mono">Why · SHAP</p>
-                <div class="shap"><span>Utilisation ratio</span><i style="--w:88%"></i></div>
-                <div class="shap"><span>Bureau score</span><i style="--w:64%"></i></div>
-                <div class="shap"><span>Estimated income</span><i style="--w:46%"></i></div>
-              </div>
-              <div class="ms__drift">
-                <p class="ms__k mono">Live monitoring · PSI, last 6 months <span class="badge badge--red">Retrain</span></p>
-                <div class="psi">
-                  <span class="psi__limit"><em class="mono">limit 0.25</em></span>
-                  <div class="psi__bar" style="--h:18%"><b>.05</b></div>
-                  <div class="psi__bar" style="--h:25%"><b>.07</b></div>
-                  <div class="psi__bar" style="--h:36%"><b>.10</b></div>
-                  <div class="psi__bar" style="--h:50%"><b>.14</b></div>
-                  <div class="psi__bar is-warn" style="--h:79%"><b>.22</b></div>
-                  <div class="psi__bar is-bad" style="--h:100%"><b>.28</b></div>
+            <div class="prod__screen">
+              <div class="win win--p360">
+                <div class="win__bar"><svg class="win__icon" viewBox="0 0 32 32"><use href="#i-p360"/></svg><b>Portfolio 360°</b><span class="seg"><i class="on">Retail</i><i>SME</i><i>Corp</i></span><span class="mini mini--solid">Ask AVA</span></div>
+                <div class="kpis">
+                  <div class="kpi"><small>30+ DPD</small><b>3.8%</b><em class="bad">+0.4 pp</em></div>
+                  <div class="kpi"><small>90+ DPD</small><b>1.6%</b><em class="warn">+0.1 pp</em></div>
+                  <div class="kpi"><small>Net loss</small><b>1.9%</b><em class="good">-0.2 pp</em></div>
+                  <div class="kpi"><small>Roll B1 to B2</small><b>18.2%</b><em class="bad">+2.1 pp</em></div>
+                  <div class="kpi"><small>Cure B1</small><b>71.2%</b><em class="bad">was 78.4%</em></div>
+                  <div class="kpi"><small>Recovery</small><b>34%</b><em class="good">+3 pp</em></div>
                 </div>
-                <p class="ms__alert"><b>Alert:</b> PSI is over the limit. Retrain queued.</p>
+                <div class="alert"><span class="alert__tag mono">Red alert</span><span class="alert__txt">Q2 personal loan cohorts are over appetite</span><span class="mini mini--soft">Ask AVA why</span></div>
               </div>
+              <div class="chat">
+                <div class="chat__head"><span class="chat__ava"><img src="assets/img/ava.webp" alt="" width="760" height="869" loading="lazy"></span><b>AVA</b><span class="mono">AI risk analyst</span></div>
+                <p class="chat__q">Why did 30+ DPD rise in the Q2 personal loan cohorts?</p>
+                <ul class="chat__steps">
+                  <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Read the static pools for every Q2 cohort</li>
+                  <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Compared channels, segments and collection teams</li>
+                  <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Isolated the accounts that drive the rise</li>
+                </ul>
+                <p class="chat__a">Most of the rise comes from a small set of accounts in two cohorts. Here is the cause, the evidence and the account list.</p>
+                <div class="chat__actions"><span class="mini mini--solid">Send to collections</span><span class="mini">Show accounts</span><span class="mini">Draft a rule in Arbiter</span></div>
+              </div>
+              <figure class="ava" aria-hidden="true">
+                <span class="ava__say">Ask me anything about the book.</span>
+                <img src="assets/img/ava.webp" alt="" width="760" height="869" loading="lazy">
+              </figure>
             </div>
-          </div>
-        </div>
-      </article>
+          </article>
 
-      <article class="prod prod--arb" data-prod>
-        <div class="prod__info">
-          <p class="prod__k cap">Case 03 · Credit operations</p>
-          <h3 class="prod__name"><svg class="prod__icon" viewBox="0 0 32 32"><use href="#i-arb"/></svg><span>Arbiter</span></h3>
-          <p class="prod__line">One decision engine for every risk decision the bank makes.</p>
-          <p class="prod__body">Risk teams build, test and ship policy as a flow, with no code and no IT queue. Every change is versioned, backtested and approved by a second pair of eyes.</p>
-          <ul class="chips chips--dot"><li>Credit risk</li><li>Fraud risk</li><li>Operational risk</li><li>Market and liquidity risk</li></ul>
-        </div>
-        <div class="prod__screen">
-          <div class="win win--arb">
-            <div class="win__bar"><svg class="win__icon" viewBox="0 0 32 32"><use href="#i-arb"/></svg><b>Personal loan · Salary transfer</b><span class="badge badge--amber mono">v13 · Draft</span><span class="mini win__right">Test</span><span class="mini mini--solid">Submit for approval</span></div>
-            <div class="flow" id="flow">
-              <div class="flow__row">
-                <div class="node" data-node><b>Application</b><span class="mono">received</span></div>
-                <div class="node" data-node><b>Fraud check</b><span class="mono ok">Pass</span></div>
-                <div class="node" data-node><b>Bureau</b><span class="mono ok">Pass</span></div>
-                <div class="node" data-node><b>Affordability</b><span class="mono ok">Pass</span></div>
-                <div class="node" data-node><b>Scorecard</b><span class="mono ok">Pass</span></div>
-                <div class="node node--out node--approve" data-node><svg viewBox="0 0 20 20"><path d="M5 10.5l3.2 3.2L15 6.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Approve</div>
-              </div>
-              <div class="flow__branches mono" aria-hidden="true">
-                <span class="branch branch--hold" style="--at:1">Fraud hold</span>
-                <span class="branch branch--decline" style="--at:2">Decline</span>
-                <span class="branch branch--refer" style="--at:3">Refer</span>
+          <article class="prod prod--ms" data-prod>
+            <div class="prod__info">
+              <p class="prod__k cap">Case 02 · Business operations</p>
+              <h3 class="prod__name"><svg class="prod__icon" viewBox="0 0 32 32"><use href="#i-ms"/></svg><span>Model Studio</span></h3>
+              <p class="prod__line">Build, test, deploy and govern every model in-house, on your own data.</p>
+              <p class="prod__body">One low-code studio from data to champion. Every live model is watched for drift, then retrained under governance your regulator can test.</p>
+              <ul class="chips chips--dot"><li>Acquisition</li><li>Underwriting</li><li>Pricing</li><li>Collections</li><li>Provisioning</li></ul>
+            </div>
+            <div class="prod__screen">
+              <div class="win win--ms">
+                <div class="win__bar"><svg class="win__icon" viewBox="0 0 32 32"><use href="#i-ms"/></svg><b>Model Studio</b><span class="win__crumb mono">Experiments · Retail</span></div>
+                <div class="ms">
+                  <div class="ms__board">
+                    <p class="ms__k mono">Leaderboard <span class="badge badge--teal">Champion</span></p>
+                    <table class="tbl">
+                      <thead><tr><th>Model</th><th>AUC</th><th>Gini</th><th>KS</th></tr></thead>
+                      <tbody>
+                        <tr class="is-champ"><td>XGBoost v14</td><td>0.81</td><td>0.62</td><td>0.45</td></tr>
+                        <tr><td>LightGBM v9</td><td>0.80</td><td>0.60</td><td>0.43</td></tr>
+                        <tr><td>LogReg v6</td><td>0.77</td><td>0.54</td><td>0.39</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="ms__why">
+                    <p class="ms__k mono">Why · SHAP</p>
+                    <div class="shap"><span>Utilisation ratio</span><i style="--w:88%"></i></div>
+                    <div class="shap"><span>Bureau score</span><i style="--w:64%"></i></div>
+                    <div class="shap"><span>Estimated income</span><i style="--w:46%"></i></div>
+                  </div>
+                  <div class="ms__drift">
+                    <p class="ms__k mono">Live monitoring · PSI, last 6 months <span class="badge badge--red">Retrain</span></p>
+                    <div class="psi">
+                      <span class="psi__limit"><em class="mono">limit 0.25</em></span>
+                      <div class="psi__bar" style="--h:18%"><b>.05</b></div>
+                      <div class="psi__bar" style="--h:25%"><b>.07</b></div>
+                      <div class="psi__bar" style="--h:36%"><b>.10</b></div>
+                      <div class="psi__bar" style="--h:50%"><b>.14</b></div>
+                      <div class="psi__bar is-warn" style="--h:79%"><b>.22</b></div>
+                      <div class="psi__bar is-bad" style="--h:100%"><b>.28</b></div>
+                    </div>
+                    <p class="ms__alert"><b>Alert:</b> PSI is over the limit. Retrain queued.</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="decision">
-              <div class="decision__card decision__card--ok"><p class="mono">Decision</p><b>Approved <span class="mono">in real time</span></b><span>Priced within portfolio and liquidity limits. Every input is kept for audit.</span></div>
-              <div class="decision__card"><p class="mono">No code · one engine</p><span>Risk teams build and change rules themselves. The same engine serves cards, auto, mortgages, SME and trade finance.</span></div>
-            </div>
-          </div>
-        </div>
-      </article>
+          </article>
 
+          <article class="prod prod--arb" data-prod>
+            <div class="prod__info">
+              <p class="prod__k cap">Case 03 · Credit operations</p>
+              <h3 class="prod__name"><svg class="prod__icon" viewBox="0 0 32 32"><use href="#i-arb"/></svg><span>Arbiter</span></h3>
+              <p class="prod__line">One decision engine for every risk decision the bank makes.</p>
+              <p class="prod__body">Risk teams build, test and ship policy as a flow, with no code and no IT queue. Every change is versioned, backtested and approved by a second pair of eyes.</p>
+              <ul class="chips chips--dot"><li>Credit risk</li><li>Fraud risk</li><li>Operational risk</li><li>Market and liquidity risk</li></ul>
+            </div>
+            <div class="prod__screen">
+              <div class="win win--arb">
+                <div class="win__bar"><svg class="win__icon" viewBox="0 0 32 32"><use href="#i-arb"/></svg><b>Personal loan · Salary transfer</b><span class="badge badge--amber mono">v13 · Draft</span><span class="mini win__right">Test</span><span class="mini mini--solid">Submit for approval</span></div>
+                <div class="flow" id="flow">
+                  <div class="flow__row">
+                    <div class="node" data-node><b>Application</b><span class="mono">received</span></div>
+                    <div class="node" data-node><b>Fraud check</b><span class="mono ok">Pass</span></div>
+                    <div class="node" data-node><b>Bureau</b><span class="mono ok">Pass</span></div>
+                    <div class="node" data-node><b>Affordability</b><span class="mono ok">Pass</span></div>
+                    <div class="node" data-node><b>Scorecard</b><span class="mono ok">Pass</span></div>
+                    <div class="node node--out node--approve" data-node><svg viewBox="0 0 20 20"><path d="M5 10.5l3.2 3.2L15 6.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Approve</div>
+                  </div>
+                  <div class="flow__branches mono" aria-hidden="true">
+                    <span class="branch branch--hold" style="--at:1">Fraud hold</span>
+                    <span class="branch branch--decline" style="--at:2">Decline</span>
+                    <span class="branch branch--refer" style="--at:3">Refer</span>
+                  </div>
+                </div>
+                <div class="decision">
+                  <div class="decision__card decision__card--ok"><p class="mono">Decision</p><b>Approved <span class="mono">in real time</span></b><span>Priced within portfolio and liquidity limits. Every input is kept for audit.</span></div>
+                  <div class="decision__card"><p class="mono">No code · one engine</p><span>Risk teams build and change rules themselves. The same engine serves cards, auto, mortgages, SME and trade finance.</span></div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+        <div class="work__hud cap" aria-hidden="true"><span id="workCount">01</span><span class="work__bar"><i id="workBar"></i></span><span>03</span></div>
+      </div>
+
+
+
+      <div class="wrap">
+        <p class="fine cap">Screens are illustrative. Figures are demo data, not client results.</p>
+        <ol class="loop" id="loop">
+          <li><b>See it.</b><span class="cap">Portfolio 360°</span></li>
+          <li><b>Ask why.</b><span class="cap">AVA</span></li>
+          <li><b>Fix it.</b><span class="cap">Model Studio · Arbiter</span></li>
+          <li><b>Prove it.</b><span class="cap">Backtest and validation</span></li>
+          <li class="loop__last"><b><em>Ship it, and watch it</em><i class="dot" data-orb></i></b><span class="cap">All three, in one loop</span></li>
+        </ol>
+      </div>
     </div>
-    <div class="work__hud cap" aria-hidden="true"><span id="workCount">01</span><span class="work__bar"><i id="workBar"></i></span><span>03</span></div>
-  </div>
+  </article>
 
+  <!-- Government services -->
+  <article class="chapter" id="ind-gov" data-rail="Government services">
+    <div class="wrap chapter__grid">
+      <header class="chapter__head">
+        <p class="cap chapter__who">Ministries · regulators · public service providers</p>
+        <h3 class="chapter__title" data-lines>Government services<i class="dot" data-orb></i></h3>
+        <p class="chapter__line" data-reveal>Services that reach people before they have to ask.</p>
+        <p class="body" data-reveal>Leading governments, Abu Dhabi among them, are moving from digital services to AI-native ones: proactive, multilingual and run on sovereign infrastructure. We help public bodies build the same foundations.</p>
+      </header>
+      <ul class="rows">
+        <li class="row"><h4>Proactive services</h4><p>Services triggered by a life event, such as a birth, a move or a new business, with no form to fill in.</p><span class="tag tag--plain">Bespoke agents</span></li>
+        <li class="row"><h4>One front door</h4><p>A single place to ask, with requests routed and resolved across departments behind it.</p><span class="tag tag--plain">Bespoke build</span></li>
+        <li class="row"><h4>Assistants for citizens and officers</h4><p>Voice and text help in Arabic and English, grounded in approved policy, with a hand-off to a person.</p><span class="tag">ntell TROT</span></li>
+        <li class="row"><h4>Licensing and compliance</h4><p>Instant guidance for businesses, and faster, more consistent eligibility decisions.</p><span class="tag tag--plain">Decision engines</span></li>
+        <li class="row"><h4>Drafting and summaries</h4><p>Policies, memos and correspondence drafted and summarised in minutes, in both languages.</p><span class="tag">ntell SPEED</span></li>
+        <li class="row"><h4>Demand and resource planning</h4><p>Service demand forecast ahead of time, so staff and capacity are in the right place.</p><span class="tag tag--plain">Forecasting models</span></li>
+        <li class="row"><h4>Sovereign data and AI</h4><p>One governed data layer and models that run in-country, on your cloud or fully on-prem.</p><span class="tag">ntell PACE</span></li>
+        <li class="row"><h4>Governance and public trust</h4><p>Every model on record, every decision explained, and a person in the loop where policy needs one.</p><span class="tag">ntell REIN</span></li>
+      </ul>
+    </div>
+  </article>
 
-  <div class="wrap">
-    <p class="fine cap">Screens are illustrative. Figures are demo data, not client results.</p>
-    <ol class="loop" id="loop">
-      <li><b>See it.</b><span class="cap">Portfolio 360°</span></li>
-      <li><b>Ask why.</b><span class="cap">AVA</span></li>
-      <li><b>Fix it.</b><span class="cap">Model Studio · Arbiter</span></li>
-      <li><b>Prove it.</b><span class="cap">Backtest and validation</span></li>
-      <li class="loop__last"><b><em>Ship it, and watch it</em><i class="dot" data-orb></i></b><span class="cap">All three, in one loop</span></li>
-    </ol>
-  </div>
+  <!-- FMCG and consumer -->
+  <article class="chapter" id="ind-fmcg" data-rail="FMCG and consumer">
+    <div class="wrap chapter__grid">
+      <header class="chapter__head">
+        <p class="cap chapter__who">Manufacturers · distributors · consumer brands</p>
+        <h3 class="chapter__title" data-lines>FMCG and consumer<i class="dot" data-orb></i></h3>
+        <p class="chapter__line" data-reveal>Sharper decisions, from the plant to the shelf.</p>
+        <p class="body" data-reveal>Price, promotion, media and stock decisions all land on the same product. We help consumer companies make them together, on one view of the data, instead of one model per team.</p>
+      </header>
+      <ul class="rows">
+        <li class="row"><h4>Pricing and revenue growth</h4><p>The right price and pack for each product and channel, as costs and demand move.</p><span class="tag tag--plain">Pricing models</span></li>
+        <li class="row"><h4>Trade promotion</h4><p>Which promotions earn back their cost, once you remove the sales that would have happened anyway.</p><span class="tag tag--plain">Promotion optimiser</span></li>
+        <li class="row"><h4>Demand sensing and supply</h4><p>Short-term forecasts from live sales signals, to decide how much to make and where to hold it.</p><span class="tag tag--plain">Forecasting models</span></li>
+        <li class="row"><h4>Availability and distribution</h4><p>Gaps on the shelf and in the distributor network found early, before the sale is lost.</p><span class="tag tag--plain">Bespoke agents</span></li>
+        <li class="row"><h4>Sales force and route to market</h4><p>Which outlets to visit, what to sell in, and a copilot that prepares each call.</p><span class="tag">ntell TROT</span></li>
+        <li class="row"><h4>Media and brand</h4><p>Where the next unit of spend works hardest, measured against real sales.</p><span class="tag tag--plain">Decision intelligence</span></li>
+        <li class="row"><h4>Reporting across entities</h4><p>Management and board reports across brands, countries and distributors, without the manual build.</p><span class="tag">ntell STRIDE</span></li>
+        <li class="row"><h4>One data foundation</h4><p>Sales, supply, finance and distributor data in one governed layer that every model shares.</p><span class="tag">ntell PACE</span></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- M&A and value creation -->
+  <article class="chapter" id="ind-ma" data-rail="M&amp;A and value creation">
+    <div class="wrap chapter__grid">
+      <header class="chapter__head">
+        <p class="cap chapter__who">Owners · investors · acquirers · roll-ups</p>
+        <h3 class="chapter__title" data-lines>M&amp;A and value creation<i class="dot" data-orb></i></h3>
+        <p class="chapter__line" data-reveal>We make mid-size companies better, and worth more.</p>
+        <p class="body" data-reveal>The best acquirers buy good companies and then improve them. We bring that discipline to mid-size businesses: we add value, lift the valuation and leave the company stronger than we found it.</p>
+      </header>
+      <ul class="rows">
+        <li class="row"><h4>AI in due diligence</h4><p>The AI upside in a target, and the risk of AI disrupting it, sized before you sign.</p><span class="tag tag--plain">Opportunity map</span></li>
+        <li class="row"><h4>A value plan ready on day one</h4><p>Built with management between signing and close, so work starts the day the deal does.</p><span class="tag tag--plain">Value creation plan</span></li>
+        <li class="row"><h4>A few use cases, fast</h4><p>Two or three high-value use cases piloted quickly, then scaled where they prove out.</p><span class="tag tag--plain">Bespoke agents</span></li>
+        <li class="row"><h4>One playbook across the portfolio</h4><p>A shared engine reused in each company, instead of a separate project in every one.</p><span class="tag">ntell PACE</span></li>
+        <li class="row"><h4>Faster integration</h4><p>Systems, data and processes of acquired companies brought together with less friction.</p><span class="tag tag--plain">Integration agents</span></li>
+        <li class="row"><h4>Value the board can see</h4><p>Adoption and impact tracked each month against the plan, in the owner's own numbers.</p><span class="tag">ntell STRIDE</span></li>
+        <li class="row"><h4>Exit readiness</h4><p>The gains quantified and the capability embedded, so both show in the valuation.</p><span class="tag tag--plain">Evidence pack</span></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- AI transformation -->
+  <article class="chapter" id="ind-ai" data-rail="AI transformation">
+    <div class="wrap chapter__grid">
+      <header class="chapter__head">
+        <p class="cap chapter__who">Leadership teams · any industry</p>
+        <h3 class="chapter__title" data-lines>AI transformation<i class="dot" data-orb></i></h3>
+        <p class="chapter__line" data-reveal>From a first use case to an AI-native operating model.</p>
+        <p class="body" data-reveal>Most organisations now use AI. Far fewer have redesigned the work around it, and that is where the value is. We help leadership teams make that shift in any sector.</p>
+      </header>
+      <ul class="rows">
+        <li class="row"><h4>Strategy and focus</h4><p>A few end-to-end plays tied to business outcomes, owned by leadership rather than by IT.</p><span class="tag tag--plain">Opportunity map</span></li>
+        <li class="row"><h4>Workflow redesign</h4><p>Work rebuilt around people and agents together, instead of AI added on top of old steps.</p><span class="tag tag--plain">Bespoke agents</span></li>
+        <li class="row"><h4>Data and agent platform</h4><p>One governed foundation, so each new use case is easier to build than the last.</p><span class="tag">ntell PACE</span></li>
+        <li class="row"><h4>Secure GenAI at work</h4><p>Drafting, summarising and analysis for every team, with your data kept out of model training.</p><span class="tag">ntell SPEED</span></li>
+        <li class="row"><h4>Governance and controls</h4><p>What each agent may do, who approves it and how it is audited, designed in from the start.</p><span class="tag">ntell REIN</span></li>
+        <li class="row"><h4>People and skills</h4><p>Role-based learning and new ways of working, so adoption is real and lasting.</p><span class="tag tag--plain">Adoption playbook</span></li>
+        <li class="row"><h4>Value tracking</h4><p>Results measured on agreed KPIs and on the P&amp;L, not on the number of pilots.</p><span class="tag tag--plain">Value dashboard</span></li>
+      </ul>
+    </div>
+  </article>
 </section>
 
-<!-- 10 · ROADMAP -->
-<section class="road" id="products" data-rail="On the roadmap">
-  <div class="wrap">
-    <div class="split-head">
-      <div>
-        <p class="label" data-reveal>On the roadmap</p>
-        <h2 class="h2" data-lines>One shared core, <em>eight products</em><i class="dot" data-orb></i></h2>
-      </div>
-      <p class="body" data-reveal>We build the data and AI foundation first. Every later solution reuses it, and one control layer governs them all.</p>
-    </div>
-
-    <div class="tiers" id="tiers">
-      <div class="tier tier--control">
-        <p class="tier__k cap">Control layer</p>
-        <ul class="tier__items">
-          <li class="pcard pcard--wide"><h3><span>ntell</span> REIN</h3><p class="pcard__cat cap">AI governance and model risk</p><p>A model inventory, explanations and an audit trail to support the governance of AI.</p><span class="pill">Planned</span></li>
-        </ul>
-      </div>
-      <div class="tier tier--solutions">
-        <p class="tier__k cap">Solutions</p>
-        <ul class="tier__items">
-          <li class="pcard"><h3><span>ntell</span> GALLOP</h3><p class="pcard__cat cap">Financial crime and investigations</p><p>AI for AML, counter-terrorist financing, fraud and case investigation.</p><span class="pill">Planned</span></li>
-          <li class="pcard"><h3><span>ntell</span> CANTER</h3><p class="pcard__cat cap">Data marketplace</p><p>Share and monetise financial data between institutions, under consent controls.</p><span class="pill">Planned</span></li>
-          <li class="pcard"><h3><span>ntell</span> STRIDE</h3><p class="pcard__cat cap">No-code reporting</p><p>AI-driven management, board and regulatory reports, refined in plain English.</p><span class="pill">Planned</span></li>
-          <li class="pcard"><h3><span>ntell</span> TROT</h3><p class="pcard__cat cap">AI assistant</p><p>A voice and text assistant for customers and employees, grounded in approved content.</p><span class="pill">Planned</span></li>
-          <li class="pcard"><h3><span>ntell</span> SPRINT</h3><p class="pcard__cat cap">Payments and transaction intelligence</p><p>Real-time cross-border payments, with risk and credit signals on each payment.</p><span class="pill">Planned</span></li>
-        </ul>
-      </div>
-      <div class="tier tier--foundation">
-        <p class="tier__k cap">Foundation</p>
-        <ul class="tier__items">
-          <li class="pcard pcard--base"><h3><span>ntell</span> PACE</h3><p class="pcard__cat cap">Data and AI platform</p><p>One platform to ingest, govern, analyse and visualise financial data, with AI built in.</p><span class="pill">Planned</span></li>
-          <li class="pcard pcard--base"><h3><span>ntell</span> SPEED</h3><p class="pcard__cat cap">Secure GenAI</p><p>Enterprise GenAI for regulated institutions that drafts, summarises and automates workflows, in English and Arabic.</p><span class="pill">Planned</span></li>
-        </ul>
-      </div>
-    </div>
-    <p class="fine cap">All eight products are at the planning stage. Descriptions are design targets, not live features.</p>
-  </div>
-</section>
-
-<!-- 11 · HOW WE ENGAGE -->
+<!-- 08 · HOW WE ENGAGE -->
 <section class="engage" id="engage" data-rail="How we engage">
   <div class="wrap engage__grid">
     <div class="engage__head">
@@ -829,7 +706,7 @@
   </div>
 </section>
 
-<!-- 12 · HOW WE DELIVER, WHERE WE OPERATE -->
+<!-- 09 · HOW WE DELIVER, WHERE WE OPERATE -->
 <section class="deliver" id="deliver" data-rail="How we deliver">
   <div class="wrap">
     <div class="deliver__head">
@@ -870,14 +747,14 @@
         <li class="place"><h4>United Kingdom</h4><p class="cap">Planned branch</p><p>European gateway, with access to the UK financial-services ecosystem.</p></li>
         <li class="place"><h4>Iraq</h4><p class="cap">Planned branch</p><p>Local presence for the Iraqi banking and enterprise sector.</p></li>
         <li class="place place--hq"><h4>Dubai, UAE</h4><p class="cap">Headquarters</p><p>Strategy, product, engineering and partnerships, and in-country presence for UAE institutions.</p></li>
-        <li class="place"><h4>Singapore</h4><p class="cap">Planned branch</p><p>South-East Asia hub for fintech and AI partnerships.</p></li>
+        <li class="place"><h4>Singapore</h4><p class="cap">Planned branch</p><p>South-East Asia hub for AI partnerships.</p></li>
         <li class="place"><h4>APAC</h4><p class="cap">Target region</p><p>Wider Asia-Pacific market development and delivery.</p></li>
       </ul>
     </div>
   </div>
 </section>
 
-<!-- 13 · TEAM -->
+<!-- 10 · TEAM -->
 <section class="who" id="team" data-rail="Team">
   <div class="wrap">
     <p class="label" data-reveal>Who builds it</p>
@@ -912,7 +789,7 @@
   </div>
 </section>
 
-<!-- 14 · CONTACT -->
+<!-- 11 · CONTACT -->
 <section class="contact" id="contact" data-rail="Contact">
   <div class="wrap">
     <div class="contact__panel" id="contactPanel">
@@ -922,13 +799,13 @@
       </figure>
       <p class="label">Next step</p>
       <h2 class="contact__h" data-lines>Let’s talk. <em>Start the conversation</em><i class="dot" data-orb></i></h2>
-      <p class="body contact__lede" data-reveal>Whether you are exploring a fintech product, an AI use case or a regional partnership, a short conversation is the best starting point.</p>
+      <p class="body contact__lede" data-reveal>Whether you are exploring an AI use case, a product or a partnership, a short conversation is the best starting point.</p>
 
       <ul class="ways">
         <li class="way">
           <p class="cap way__k">Quick start</p>
           <h3>Introductory call</h3>
-          <p>An open conversation about your priorities, and where fintech or AI can help.</p>
+          <p>An open conversation about your priorities, and where AI can help.</p>
           <ul><li>Your goals and constraints</li><li>Relevant ntell capabilities</li><li>Suggested next steps</li></ul>
         </li>
         <li class="way way--pick">
@@ -964,10 +841,10 @@
 <footer class="foot" id="foot" data-rail="ntell.ai">
   <div class="wrap">
     <div class="foot__top">
-      <p class="foot__tag">Intelligent insights, <em>smarter decisions.</em></p>
+      <p class="foot__tag">We build the <em>AI-native enterprise.</em></p>
       <nav class="foot__nav" aria-label="Footer">
         <div><p class="cap">Company</p><a href="#about">About</a><a href="#what">What we do</a><a href="#approach">How we work</a><a href="#team">Team</a></div>
-        <div><p class="cap">Offer</p><a href="#industries">Industries</a><a href="#work">Work</a><a href="#products">Roadmap</a><a href="#engage">How we engage</a></div>
+        <div><p class="cap">Industries</p><a href="#ind-fs">Financial services</a><a href="#ind-gov">Government</a><a href="#ind-fmcg">FMCG and consumer</a><a href="#ind-ma">M&amp;A and value creation</a><a href="#ind-ai">AI transformation</a></div>
         <div><p class="cap">Contact</p><a href="mailto:contact@ntell.ai">contact@ntell.ai</a><span>Dubai, UAE</span><span class="ph">[ Phone number ]</span></div>
       </nav>
     </div>
@@ -978,7 +855,7 @@
         <circle class="foot__slot" data-orb cx="412.1" cy="125.2" r="20.8"/>
       </svg>
     </div>
-    <div class="foot__base cap"><span>© 2026 ntell.ai</span><span>Fintech and AI · Dubai</span><a href="#top">Back to top ↑</a></div>
+    <div class="foot__base cap"><span>© 2026 ntell.ai</span><span>AI transformation, across industries</span><a href="#top">Back to top ↑</a></div>
   </div>
 </footer>
 

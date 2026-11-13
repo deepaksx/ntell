@@ -1,7 +1,7 @@
 # ntell.ai
 
-The company site for ntell: fintech and AI products and services, headquartered
-in Dubai. Intelligent insights, smarter decisions.
+The company site for ntell, an AI transformation company working across
+financial services, government, FMCG and consumer, and M&A and value creation.
 
 A static, scroll-driven single page. No framework and no build step: serve the
 folder with any web server and it runs.
@@ -31,26 +31,30 @@ assets/vendor/          GSAP 3.13 (core, ScrollTrigger, SplitText) and Lenis 1.3
 
 ## Page outline
 
-1. Hero: tagline and the signal orb
-2. Who we are: fintech and AI built as one, mission and values
-3. What we do: the two disciplines
+1. Hero: "We build the AI-native enterprise", with the signal orb in its field
+2. Who we are: one partner for AI transformation, mission and values
+3. What we do: advise, build, equip, embed
 4. What is changing, and the gap
 5. How we work: bespoke deployment, strategic partnership, change management
-6. Where we drive value
-7. Industries: financial services, government, FMCG and consumer, M&A and
-   value creation, AI transformation
-8. Work: Portfolio 360°, Model Studio, Arbiter
-9. On the roadmap: the eight ntell products (all marked as planned)
-10. How we engage: five stages
-11. How we deliver, and where we operate
-12. Team (placeholders) and contact
+6. Industries, one chapter each, with the capabilities and the ntell products
+   that belong there:
+   - Fintech and financial services (payments, core banking, fraud, risk,
+     modelling, decisioning, reporting, data sharing, AI governance), with the
+     Portfolio 360°, Model Studio and Arbiter product gallery inside it
+   - Government and public services
+   - FMCG and consumer
+   - M&A and value creation
+   - AI transformation
+7. How we engage: five stages
+8. How we deliver, and where we operate
+9. Team (placeholders) and contact
 
 ## Design language
 
 An off-white page with an editorial serif (Newsreader) for statements and
 Stack Sans for everything you read and use. The palette comes from the logo:
-ink, crimson and a deep maroon for the dark panels. Product screens in the Work
-section keep their own colours. Tokens live at the top of `css/style.css`.
+ink, crimson and a deep maroon for the dark panels. Product screens in the
+gallery keep their own colours. Tokens live at the top of `css/style.css`.
 
 ## Motion
 
@@ -65,15 +69,22 @@ requested, the page is complete and static.
   page edge between them, passes through the five stages, and ends as the dot
   of the footer wordmark. Any element with `data-orb` is an anchor, in document
   order.
-- **Hero graphic**: canvas. Many scattered signal lines flow into the orb and
-  leave as a few straight, evenly spaced ones. The lines follow the orb as it
-  rolls away.
+- **The field**: canvas, on one fixed layer behind the whole page so no section
+  edge ever cuts it. The orb sits in a field of lines the way a pole sits in a
+  magnetic field: lines are drawn into it, a few leave the far side, the rest
+  sweep round it. Every line is a streamline of one smooth field, retraced on
+  each frame, so nothing jumps. The field leans with the scroll and settles
+  like a compass needle, shrinks with the orb as it rolls away, and parts
+  round the pointer as it would round a second pole.
+- **Hero interactions**: drag the orb to spin it (mouse or touch, with
+  momentum); move over the lines to bend them; press and hold to push them
+  further apart; tap the orb to make the whole field ring.
 - **What is changing**: a pinned canvas scene where a layered organisation
   chart reorganises into small teams with agent rings.
-- **How we work**: sticky stacking cards. **Work**: a pinned horizontal gallery
-  with three animated product screens. **Roadmap**: the product stack builds
-  from the foundation up. **How we engage**: a vertical timeline that the orb
-  travels down.
+- **How we work**: sticky stacking cards. **Industries**: each chapter heading
+  stays put while its rows come in beside it; the financial services chapter
+  holds a pinned horizontal gallery with three animated product screens.
+  **How we engage**: a vertical timeline that the orb travels down.
 
 ## Editing content
 
@@ -83,9 +94,11 @@ requested, the page is complete and static.
   `.member__pic`.
 - **Contact**: the phone and office-address placeholders are marked with the
   `ph` class in the contact section and in the footer.
-- **Roadmap status**: each product card carries a `Planned` pill. Change the
-  text there as products move on.
-- Product screens in the Work section use demo data and are labelled as such.
+- **Industries**: each chapter is an `<article class="chapter">`; a capability
+  is one `<li class="row">` with a heading, a line of text and a tag. The tag
+  names the ntell product that covers it, or uses `tag--plain` for bespoke work.
+- Product screens in the financial services gallery use demo data and are
+  labelled as such.
 
 ## Deploy
 

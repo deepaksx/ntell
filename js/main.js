@@ -202,21 +202,52 @@
   }
 
   /* ---------------------------------------------------------------------
-     The travelling signal. The orb sits large on the hero stage, rolls away
-     as the page scrolls, docks on the full stop of each chapter heading,
-     rides a rail at the page edge between them, and lands as the dot of the
-     wordmark in the footer.
+     The travelling signal. The orb sits large on the hero stage, where it can
+     be dragged to turn it. It rolls away as the page scrolls, docks on the
+     full stop of each chapter heading, rides a rail at the page edge between
+     them, and lands as the dot of the wordmark in the footer.
      --------------------------------------------------------------------- */
   function createSignal() {
     const el = $('#signal'), rail = $('#rail'), label = $('#railLabel');
+    const stage = $('#heroStage'), hint = $('#heroHint');
     const orb = createOrb($('#signalCanvas'));
     // Anchors are read live each frame: SplitText re-creates heading nodes when it re-splits.
     const anchors = () => $$('[data-orb]').map((node) => ({
       node, mode: node.dataset.orb || 'rail',
       k: node.classList.contains('dot') ? 1.5 : 1
     }));
-    const st = { on: false, pop: 1, lx: null, ly: 0, ls: 0, dockedAt: -1, section: '', t: 0 };
-    const pos = { x: 0, y: 0, r: 0, live: false };
+    const st = { on: false, pop: 1, lx: null, ly: 0, ls: 0, dockedAt: -1, section: '', t: 0, stageU: 0, hover: 0, hoverT: 0 };
+    const pos = { x: 0, y: 0, r: 0, live: false, home: 1 };
+    const drag = { on: false, x: 0, y: 0, vx: 0, vy: 0, moved: 0, used: false };
+    let onTap = null;
+
+    // drag to turn the orb, with a little momentum when it is let go
+    if (!reduce && stage) {
+      stage.addEventListener('pointerdown', (e) => {
+        if (!st.on || st.stageU > 0.3) return;
+        drag.on = true; drag.x = e.clientX; drag.y = e.clientY; drag.vx = 0; drag.vy = 0; drag.moved = 0;
+        try { stage.setPointerCapture(e.pointerId); } catch (err) { /* capture is a nicety */ }
+        stage.classList.add('is-dragging');
+        e.preventDefault();
+      });
+      stage.addEventListener('pointermove', (e) => {
+        if (!drag.on) return;
+        const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+        drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.hypot(dx, dy);
+        drag.vx = dx; drag.vy = dy;
+        orb.roll(dx, dy, Math.max(pos.r * 0.6, 40));
+        if (!drag.used && drag.moved > 14) { drag.used = true; if (hint) hint.classList.remove('is-on'); }
+      });
+      const end = () => {
+        if (!drag.on) return;
+        drag.on = false; stage.classList.remove('is-dragging');
+        if (drag.moved < 6 && onTap) { drag.vx = 0; drag.vy = 0; onTap(pos.x, pos.y); orb.spin([0.2, 1, 0.1], 0.5); }
+      };
+      stage.addEventListener('pointerup', end);
+      stage.addEventListener('pointercancel', end);
+      stage.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') st.hoverT = 1; });
+      stage.addEventListener('pointerleave', () => { st.hoverT = 0; });
+    }
 
     function frame(time) {
       if (!st.on) return;
@@ -248,6 +279,7 @@
         if (A[i].mode === 'stage') u[i] = clamp(sy / (vh * 0.55));
         else u[i] = A[i + 1] && A[i + 1].mode === 'direct' ? 0 : clamp((relY - P[i].y) / D);
       }
+      st.stageU = A[0].mode === 'stage' ? u[0] : 1;
       let k = 0;
       for (let i = n - 1; i > 0; i--) { if (v[i] > 0) { k = i; break; } }
 
@@ -269,24 +301,29 @@
         p = mix(from, P[k], ev);
         railness = eu * (1 - ev); st.dockedAt = -1;
       }
-      p.s *= st.pop;
+      const home = A[0].mode === 'stage' ? clamp(p.s / Math.max(1, P[0].s)) : 0;
+      st.hover += (st.hoverT * (st.stageU < 0.05 ? 1 : 0) - st.hover) * 0.12;
+      p.s *= st.pop * (1 + 0.035 * st.hover + (drag.on ? 0.02 : 0));
 
-      // roll: with the scroll always, and with any sideways travel
+      // roll: with the scroll always, with any sideways travel, and with whatever spin a drag left behind
       const radius = Math.max(p.s / 2, 64);
       if (st.lx !== null) orb.roll((p.x - st.lx) * 0.9, sy - st.ls, radius);
       st.lx = p.x; st.ly = p.y; st.ls = sy;
+      const coasting = Math.abs(drag.vx) + Math.abs(drag.vy) > 0.08;
+      if (!drag.on && coasting) { orb.roll(drag.vx, drag.vy, Math.max(p.s * 0.3, 40)); drag.vx *= 0.955; drag.vy *= 0.955; }
       if (docked && k === n - 1) orb.settle(0.07);
-      else orb.spin([0.25, 1, 0.12], dt * (0.1 + 0.25 * clamp(p.s / 400)));
+      else if (!drag.on && !coasting) orb.spin([0.25, 1, 0.12], dt * (0.1 + 0.25 * clamp(p.s / 400)));
       orb.render();
 
       el.style.transform = `translate3d(${p.x.toFixed(2)}px,${p.y.toFixed(2)}px,0) scale(${(p.s / 100).toFixed(4)})`;
-      pos.x = p.x; pos.y = p.y; pos.r = p.s / 2; pos.live = true;
+      pos.x = p.x; pos.y = p.y; pos.r = p.s / 2; pos.home = home; pos.live = true;
 
       rail.style.opacity = (railness * 0.95).toFixed(3);
       if (railness > 0.02) {
         label.style.top = `${R.y - rail.getBoundingClientRect().top}px`;
         if (label.textContent !== st.section) label.textContent = st.section;
       }
+      if (hint && !drag.used) hint.classList.toggle('is-on', st.hintReady === true && st.stageU < 0.04);
     }
     function hit(node) {
       if (!node.classList || !node.classList.contains('dot')) return;
@@ -304,150 +341,322 @@
         gsap.to(st, { pop: 1, duration: 1.5, ease: 'elastic.out(1, 0.72)' });
         const kick = { v: 0.11 };
         gsap.to(kick, { v: 0, duration: 2.2, ease: 'power3.out', onUpdate: () => orb.spin([0.2, 1, 0], kick.v) });
+        gsap.delayedCall(3.2, () => { st.hintReady = true; });
       },
+      onTap(fn) { onTap = fn; },
       setSection(name) { st.section = name; },
       hide(flag) { gsap.to(el, { autoAlpha: flag ? 0 : 1, duration: 0.25, overwrite: true }); }
     };
   }
 
   /* ---------------------------------------------------------------------
-     Hero graphic: many scattered signals flow into the orb and leave as a few
-     clear, evenly spaced lines. Insight in, decisions out. The lines follow
-     the orb wherever it rolls.
+     The field. The orb sits in a field of lines the way a pole sits in a
+     magnetic field: lines stream in from the left and are drawn into it, a
+     few leave the far side in step, and the rest sweep round it.
+     Every line is a streamline of one smooth field, traced outward from the
+     orb on each frame, so nothing ever jumps. The field leans as the page
+     scrolls, shrinks with the orb as it rolls away, and bends round the
+     pointer as it would round a second pole. It is drawn on one fixed layer
+     behind the whole page, so no section edge ever cuts it.
      --------------------------------------------------------------------- */
-  function createHeroViz(canvas, signalPos) {
+  function createFlow(canvas, signalPos) {
     const ctx = canvas.getContext('2d');
     const stage = $('#heroStage');
-    const S = { intro: reduce ? 1 : 0, scroll: 0, mx: 0, my: 0, tx: 0, ty: 0 };
-    let W = 1, H = 1, dpr = 1, compact = false, lines = [], visible = true, time = 0, last = 0;
+    const S = { intro: reduce ? 1 : 0 };
+    const MAX = 150;          // most steps any one line is traced
+    const KAPPA = 0.86;       // how hard the orb draws the field in (1 would pull every nearby line into it)
+    const WK = 0.0125;        // wavenumber of the slow ripple that travels down the lines
+    const smooth = (t) => { t = clamp(t); return t * t * (3 - 2 * t); };
+    // the pointer: where it is, where its pole has glided to, how strongly it is felt, how hard it is pressed
+    const ptr = { x: 0, y: 0, sx: 0, sy: 0, k: 0, target: 0, press: 0, pressT: 0, pv: 0 };
+    let W = 1, H = 1, dpr = 1, compact = false, time = 0, last = 0, cleared = false;
+    let inb = [], outb = [], byp = [];
+    let surge = 0, kick = 0, kickV = 0, tilt = 0, tiltV = 0, scrollV = 0, lastSy = window.scrollY, dash = 0;
+    // the field as it stands on this frame
+    let ox = 0, oy = 0, R = 1, kR2 = 0, ca = 1, sa = 0, h = 8, wAmp = 0, gcx = 0, reach2 = 1;
+    let pA2 = 0, pS2 = 1, pTx = 1, pTy = 0, pV = 0;
+    let vx = 0, vy = 0;
 
     function build() {
-      const r = canvas.getBoundingClientRect();
-      W = Math.max(1, r.width); H = Math.max(1, r.height);
-      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      W = Math.max(1, window.innerWidth); H = Math.max(1, window.innerHeight);
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
       compact = W < 860;
       const rnd = seeded(7);
-      const n = compact ? 26 : 46;
-      lines = Array.from({ length: n }, (_, i) => ({
-        f: (i + 0.5) / n,
-        sx: -0.05 - rnd() * 0.1,
-        sy: (i + 0.5) / n + (rnd() - 0.5) * 0.05,
-        amp: 16 + rnd() * 52, w: 0.22 + rnd() * 0.5, ph: rnd() * 6.28,
-        hot: i % 6 === 2, alpha: 0.09 + rnd() * 0.15, lw: 0.8 + rnd() * 0.6,
-        pulses: [rnd(), rnd() > 0.45 ? rnd() : -1], speed: 0.055 + rnd() * 0.075
+      const buf = () => new Float32Array((MAX + 2) * 2);
+      const nIn = compact ? 20 : 34;
+      // lines that end on the orb: evenly spaced across it, so the same flux runs between every pair
+      inb = Array.from({ length: nIn }, (_, i) => ({
+        s: lerp(-0.965, 0.965, i / (nIn - 1)),
+        hot: i % 6 === 2, alpha: 0.5 + rnd() * 0.5, lw: 0.8 + rnd() * 0.55,
+        pulses: [i % 2 ? rnd() : -1, rnd() > 0.72 ? rnd() : -1], speed: 0.05 + rnd() * 0.06,
+        buf: buf(), n: 0
       }));
+      // lines that leave it: fewer, and in step
+      const nOut = compact ? 5 : 7;
+      outb = Array.from({ length: nOut }, (_, j) => ({ s: (j - (nOut - 1) / 2) * (compact ? 0.3 : 0.235), buf: buf(), n: 0 }));
+      // lines that pass above and below without touching it
+      const nBy = compact ? 3 : 5;
+      byp = [];
+      [-1, 1].forEach((side) => { for (let m = 0; m < nBy; m++) byp.push({ side, m, alpha: 0.4 + rnd() * 0.35, lw: 0.7 + rnd() * 0.45, a: buf(), b: buf(), na: 0, nb: 0 }); });
+      cleared = false;
     }
-    const bez = (p0, p1, p2, p3, t) => {
-      const u = 1 - t, a = u * u * u, b = 3 * u * u * t, c = 3 * u * t * t, d = t * t * t;
-      return [a * p0[0] + b * p1[0] + c * p2[0] + d * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1]];
-    };
+
+    // The undisturbed field: a steady stream along (ca, sa) plus the orb's pull. Sets vx, vy.
+    function base(x, y) {
+      const X = x - ox, Y = y - oy;
+      const r2 = Math.max(X * X + Y * Y, R * R * 0.3);
+      const q = kR2 / (r2 * r2);
+      const a = (X * X - Y * Y) * q, b = -2 * X * Y * q;
+      vx = ca + ca * a - sa * b;
+      vy = sa - sa * a - ca * b;
+    }
+    // The field with the pointer's pole and the travelling ripple added. Both come from a stream
+    // function, so lines part and close again around them instead of being shoved aside.
+    function field(x, y) {
+      base(x, y);
+      const bx = vx, by = vy;
+      let px = 0, py = 0;
+      if (pA2 > 0.5) {
+        const zx = x - ptr.sx, zy = y - ptr.sy;
+        const xi = zx * pTx + zy * pTy, eta = zy * pTx - zx * pTy;
+        const D = xi * xi + eta * eta + pS2, D2 = D * D;
+        const ux = (2 * eta * eta / D2 - 1 / D) * pA2 * pV;
+        const ue = (-2 * xi * eta / D2) * pA2 * pV;
+        px = ux * pTx - ue * pTy; py = ux * pTy + ue * pTx;
+      }
+      if (wAmp) {
+        const wv = wAmp * Math.sin(((x - ox) * ca + (y - oy) * sa) * WK - time * 1.15);
+        px -= sa * wv; py += ca * wv;
+      }
+      // the disturbance never outweighs the field itself, so every line keeps making headway and none can curl up
+      const bm = bx * bx + by * by, pm = px * px + py * py;
+      if (pm > 0.7 * bm) { const k = Math.sqrt(0.7 * bm / pm); px *= k; py *= k; }
+      vx = bx + px; vy = by + py;
+    }
+    // The stream function of the same field: constant along every line. Used to place the lines that pass the orb by.
+    function psi(x, y) {
+      const X = x - ox, Y = y - oy;
+      const eta = Y * ca - X * sa, xi = X * ca + Y * sa;
+      let p = eta * (1 + kR2 / Math.max(X * X + Y * Y, R * R * 0.3));
+      if (pA2 > 0.5) {
+        const zx = x - ptr.sx, zy = y - ptr.sy;
+        const pxi = zx * pTx + zy * pTy, pe = zy * pTx - zx * pTy;
+        p -= pV * pA2 * pe / (pxi * pxi + pe * pe + pS2);
+      }
+      if (wAmp) p += (wAmp / WK) * Math.cos(xi * WK - time * 1.15);
+      return p;
+    }
+    // Follow the field from (x, y) in even steps, downstream (dir 1) or upstream (dir -1). Returns the point count.
+    function trace(x, y, dir, buf) {
+      let n = 0, lx = dir * ca, ly = dir * sa;
+      buf[n++] = x; buf[n++] = y;
+      for (let i = 0; i < MAX; i++) {
+        field(x, y);
+        let m = Math.sqrt(vx * vx + vy * vy);
+        if (m > 1e-5) { lx = dir * vx / m; ly = dir * vy / m; }
+        field(x + lx * h * 0.5, y + ly * h * 0.5);
+        m = Math.sqrt(vx * vx + vy * vy);
+        if (m > 1e-5) { lx = dir * vx / m; ly = dir * vy / m; }
+        x += lx * h; y += ly * h;
+        buf[n++] = x; buf[n++] = y;
+        const gx = x - gcx, gy = y - oy;
+        if (gx * gx + gy * gy > reach2 || x < -30 || x > W + 30 || y < -60 || y > H + 60) break;
+      }
+      return n >> 1;
+    }
 
     function draw(dt) {
-      const rect = canvas.getBoundingClientRect();
-      let ox, oy, R;
-      if (signalPos && signalPos.live) { ox = signalPos.x - rect.left; oy = signalPos.y - rect.top; R = signalPos.r; }
-      else { const s = stage.getBoundingClientRect(); ox = s.left + s.width / 2 - rect.left; oy = s.top + s.height / 2 - rect.top; R = s.width / 2; }
-      const sRect = stage.getBoundingClientRect();
-      const stageR = sRect.width / 2;
-      const fade = 1 - clamp((S.scroll - 0.22) / 0.5);
+      // where the orb is, and how much of its field shows
+      let strength;
+      const sRect = stage.getBoundingClientRect(), stageR = sRect.width / 2;
+      if (signalPos && signalPos.live) { ox = signalPos.x; oy = signalPos.y; R = signalPos.r; strength = clamp((signalPos.home - 0.12) / 0.5); }
+      else { ox = sRect.left + stageR; oy = sRect.top + stageR; R = stageR; strength = 1; }
       const I = S.intro;
+      const fade = smooth(strength) * clamp(I * 2.4);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (fade <= 0.003 || R < 5) { if (!cleared) { ctx.clearRect(0, 0, W, H); cleared = true; } return; }
+      cleared = false;
       ctx.clearRect(0, 0, W, H);
-      if (fade <= 0.002) return;
+
+      // this frame's field: it switches on with the intro, breathes a little, leans with the scroll, rings after a tap
+      const live = !reduce;
+      const kappa = Math.min(0.985, KAPPA * easeOut(clamp(I / 0.85)) * (1 + (live ? 0.035 * Math.sin(time * 0.55) : 0) + 0.13 * kick));
+      kR2 = kappa * R * R;
+      const ang = tilt + (live ? Math.sin(time * 0.31 + 1.3) * 0.02 : 0);
+      ca = Math.cos(ang); sa = Math.sin(ang);
+      h = clamp(R * 0.058, 2.5, compact ? 8 : 11);
+      wAmp = live ? 0.05 : 0;
+      const reach = R * (compact ? 3.3 : 4.9);
+      gcx = ox + R * (compact ? 0 : 0.5); reach2 = reach * reach;
+      const thin = clamp(R / 120, 0.45, 1);
+
+      // the pointer's pole: sized to the orb, aligned with the field where it sits, fading as it nears the orb itself
+      let pk = ptr.k, pA = 0;
+      if (pk > 0.004) {
+        pA = clamp(R * 0.34, 14, compact ? 46 : 68) * (1 + 0.5 * ptr.press);
+        pk *= smooth((Math.hypot(ptr.sx - ox, ptr.sy - oy) - R - pA * 0.35) / (pA * 1.5));
+      }
+      if (pk > 0.004) {
+        pA2 = 0; base(ptr.sx, ptr.sy);
+        pV = Math.sqrt(vx * vx + vy * vy);
+        if (pV > 1e-4) { pTx = vx / pV; pTy = vy / pV; }
+        pV = Math.min(pV, 1.5);
+        pA2 = pA * pA * pk; pS2 = pA * pA * 1.22;
+      } else pA2 = 0;
+
+      // trace every line from the orb outward
+      const nx = -sa, ny = ca, rr = R * 0.985;
+      for (let i = 0; i < inb.length; i++) {
+        const l = inb[i], c = Math.sqrt(1 - l.s * l.s) * rr, t = l.s * rr;
+        l.n = trace(ox - ca * c + nx * t, oy - sa * c + ny * t, -1, l.buf);
+      }
+      for (let i = 0; i < outb.length; i++) {
+        const l = outb[i], c = Math.sqrt(1 - l.s * l.s) * rr, t = l.s * rr;
+        l.n = trace(ox + ca * c + nx * t, oy + sa * c + ny * t, 1, l.buf);
+      }
+      const dPsi = (1 + kappa) * 1.93 / (inb.length - 1);
+      for (let i = 0; i < byp.length; i++) {
+        const l = byp[i];
+        const target = ((1 + kappa) * 0.965 + (l.m + 1) * dPsi) * R * l.side;
+        const p0 = Math.abs(target) / R;
+        let Y = (p0 + Math.sqrt(Math.max(0, p0 * p0 - 4 * kappa))) / 2 * R * l.side;
+        // settle the crossing point on the line's own flux value, so the pointer bends it rather than pins it
+        for (let it = 0; it < 3; it++) {
+          const x = ox + nx * Y, y = oy + ny * Y;
+          field(x, y);
+          Y -= clamp((psi(x, y) - target) / Math.max(0.12, vx * ca + vy * sa), -R * 0.4, R * 0.4);
+        }
+        if (Math.abs(Y) < R * 1.04) Y = R * 1.04 * l.side;
+        const x0 = ox + nx * Y, y0 = oy + ny * Y;
+        l.na = trace(x0, y0, -1, l.a); l.nb = trace(x0, y0, 1, l.b);
+      }
 
       // the light the orb throws on the page, and the shadow it rests on
-      const glowA = 0.16 * fade * clamp(I * 2) * clamp(R / (stageR * 0.5));
+      const glowA = 0.16 * fade;
       if (glowA > 0.003) {
         const g = ctx.createRadialGradient(ox, oy, R * 0.6, ox, oy, R * 2.3);
         g.addColorStop(0, `rgba(229,23,74,${glowA})`); g.addColorStop(1, 'rgba(229,23,74,0)');
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(ox, oy, R * 2.3, 0, Math.PI * 2); ctx.fill();
         ctx.save(); ctx.translate(ox, oy + R * 1.2); ctx.scale(1, 0.1);
         const sh = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.95);
-        sh.addColorStop(0, `rgba(23,9,12,${0.2 * fade * clamp(I * 2)})`); sh.addColorStop(1, 'rgba(23,9,12,0)');
+        sh.addColorStop(0, `rgba(23,9,12,${0.2 * fade})`); sh.addColorStop(1, 'rgba(23,9,12,0)');
         ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(0, 0, R * 0.95, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       }
+      // the pointer's pole shows only as the faintest lift in the paper where the lines part
+      if (pA2 > 4) {
+        const lr = pA * 1.9;
+        const here = smooth(1 - (Math.hypot(ptr.sx - gcx, ptr.sy - oy) - R) / (reach * 0.8 - R));
+        const lens = ctx.createRadialGradient(ptr.sx, ptr.sy, 0, ptr.sx, ptr.sy, lr);
+        lens.addColorStop(0, `rgba(255,255,255,${0.42 * pk * fade * here})`); lens.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = lens; ctx.beginPath(); ctx.arc(ptr.sx, ptr.sy, lr, 0, Math.PI * 2); ctx.fill();
+      }
 
-      const yTop = compact ? -0.02 * H : -0.04 * H;
-      const yBot = compact ? Math.min(H, sRect.bottom - rect.top + stageR * 0.7) : 1.04 * H;
-      const tp = easeOut(clamp(I / 0.75));
-      ctx.lineCap = 'round';
-      lines.forEach((l) => {
-        const sx = l.sx * W;
-        const sy = lerp(yTop, yBot, l.sy) + Math.sin(time * l.w + l.ph) * 7 + S.my * 10 * (l.f - 0.5);
-        const th = lerp(118, 242, l.f) * (Math.PI / 180);
-        const ex = ox + Math.cos(th) * R * 0.985, ey = oy - Math.sin(th) * R * 0.985;
-        const dx = ex - sx;
-        const wob = Math.sin(time * l.w * 1.3 + l.ph * 2) * l.amp;
-        const p0 = [sx, sy], p1 = [sx + dx * 0.42, sy + wob + S.my * 12];
-        const p2 = [ex - dx * 0.3, ey + (ey - oy) * 1.35 - wob * 0.25], p3 = [ex, ey];
-        const col = l.hot ? '215,20,60' : '23,9,12';
-        const a = (l.hot ? 0.5 : l.alpha) * fade;
-        const grad = ctx.createLinearGradient(sx, 0, ex, 0);
-        // lines stay almost invisible where they pass behind the text, and gather strength towards the orb
-        const quiet = compact ? 0.12 : 0.4;
-        grad.addColorStop(0, `rgba(${col},0)`); grad.addColorStop(quiet, `rgba(${col},${a * 0.05})`);
-        grad.addColorStop(Math.min(0.95, quiet + 0.24), `rgba(${col},${a * 0.6})`); grad.addColorStop(1, `rgba(${col},${a})`);
-        ctx.strokeStyle = grad; ctx.lineWidth = l.hot ? l.lw + 0.4 : l.lw;
-        ctx.beginPath(); ctx.moveTo(p0[0], p0[1]);
-        if (tp >= 1) ctx.bezierCurveTo(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
-        else {
-          const q0 = [lerp(p0[0], p1[0], tp), lerp(p0[1], p1[1], tp)], q1 = [lerp(p1[0], p2[0], tp), lerp(p1[1], p2[1], tp)], q2 = [lerp(p2[0], p3[0], tp), lerp(p2[1], p3[1], tp)];
-          const r0 = [lerp(q0[0], q1[0], tp), lerp(q0[1], q1[1], tp)], r1 = [lerp(q1[0], q2[0], tp), lerp(q1[1], q2[1], tp)];
-          ctx.bezierCurveTo(q0[0], q0[1], r0[0], r0[1], lerp(r0[0], r1[0], tp), lerp(r0[1], r1[1], tp));
-        }
+      // lines are strongest at the orb and thin away with distance, as a field does
+      const shade = (col, peak) => {
+        const g = ctx.createRadialGradient(ox, oy, R * 0.9, gcx, oy, reach);
+        g.addColorStop(0, `rgba(${col},${peak})`); g.addColorStop(0.16, `rgba(${col},${peak * 0.7})`);
+        g.addColorStop(0.42, `rgba(${col},${peak * 0.3})`); g.addColorStop(0.72, `rgba(${col},${peak * 0.08})`);
+        g.addColorStop(1, `rgba(${col},0)`);
+        return g;
+      };
+      const gInk = shade('23,9,12', 0.3 * fade), gHot = shade('215,20,60', 0.56 * fade), gOut = shade('215,20,60', 0.62 * fade);
+      const path = (buf, n) => { ctx.moveTo(buf[0], buf[1]); for (let k = 1; k < n; k++) ctx.lineTo(buf[k * 2], buf[k * 2 + 1]); };
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+      for (let i = 0; i < byp.length; i++) {
+        const l = byp[i];
+        ctx.strokeStyle = gInk; ctx.globalAlpha = l.alpha; ctx.lineWidth = l.lw * thin;
+        ctx.beginPath();
+        ctx.moveTo(l.a[(l.na - 1) * 2], l.a[(l.na - 1) * 2 + 1]);
+        for (let k = l.na - 2; k >= 0; k--) ctx.lineTo(l.a[k * 2], l.a[k * 2 + 1]);
+        for (let k = 1; k < l.nb; k++) ctx.lineTo(l.b[k * 2], l.b[k * 2 + 1]);
         ctx.stroke();
-        if (I >= 0.9) {
-          for (let i = 0; i < l.pulses.length; i++) {
-            let u = l.pulses[i];
-            if (u < 0) continue;
-            u += dt * l.speed * (0.45 + 1.7 * u);
-            if (u >= 1) u = 0;
-            l.pulses[i] = u;
-            const pt = bez(p0, p1, p2, p3, u);
-            const vis = clamp((u - (compact ? 0.15 : 0.42)) / 0.3);
-            if (vis <= 0) continue;
-            ctx.fillStyle = `rgba(215,20,60,${vis * 0.9 * fade})`;
-            ctx.beginPath(); ctx.arc(pt[0], pt[1], l.hot ? 2.6 : 1.9, 0, Math.PI * 2); ctx.fill();
-          }
+      }
+      const speedUp = 1 + surge * 3.2;
+      const span = (R * 1.7) / h;
+      for (let i = 0; i < inb.length; i++) {
+        const l = inb[i];
+        ctx.strokeStyle = l.hot ? gHot : gInk; ctx.globalAlpha = l.hot ? 1 : l.alpha; ctx.lineWidth = (l.hot ? l.lw + 0.35 : l.lw) * thin;
+        ctx.beginPath(); path(l.buf, l.n); ctx.stroke();
+        if (I < 0.9 || !live) continue;
+        // signals running down the line towards the orb, quickening as they near it
+        ctx.globalAlpha = 1;
+        for (let j = 0; j < l.pulses.length; j++) {
+          let u = l.pulses[j];
+          if (u < 0) continue;
+          u += dt * l.speed * (0.45 + 1.7 * u) * speedUp;
+          if (u >= 1) u = 0;
+          l.pulses[j] = u;
+          const at = (1 - u) * span, k = Math.floor(at);
+          if (k >= l.n - 1) continue;
+          const vis = smooth((u - 0.04) / 0.5);
+          if (vis <= 0) continue;
+          const f = at - k;
+          const x = lerp(l.buf[k * 2], l.buf[k * 2 + 2], f), y = lerp(l.buf[k * 2 + 1], l.buf[k * 2 + 3], f);
+          ctx.fillStyle = `rgba(215,20,60,${vis * 0.9 * fade * fade})`;
+          ctx.beginPath(); ctx.arc(x, y, (l.hot ? 2.6 : 1.9) * (0.55 + 0.45 * thin) * (1 + surge * 0.6), 0, Math.PI * 2); ctx.fill();
         }
-      });
-
-      // what leaves: a few straight, evenly spaced lines, pulsing in step
-      const bp = easeOut(clamp((I - 0.55) / 0.45)) * fade * clamp(R / (stageR * 0.45));
+      }
+      // what leaves: a few clear lines, pulsing in step
+      const bp = easeOut(clamp((I - 0.5) / 0.5));
       if (bp > 0.003) {
-        const K = compact ? 5 : 7;
-        for (let j = 0; j < K; j++) {
-          const dy = (j - (K - 1) / 2) * R * (compact ? 0.21 : 0.17);
-          const x0 = ox + Math.sqrt(Math.max(0, R * R - dy * dy)) - 1, y = oy + dy;
-          const x1 = lerp(x0, W + 12, bp);
-          const g = ctx.createLinearGradient(x0, 0, W, 0);
-          g.addColorStop(0, `rgba(215,20,60,${0.5 * bp})`); g.addColorStop(1, 'rgba(215,20,60,0)');
-          ctx.strokeStyle = g; ctx.lineWidth = 1.1; ctx.setLineDash([]);
-          ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
-          ctx.lineWidth = 3.2; ctx.setLineDash([0.1, 22]); ctx.lineDashOffset = -(time * 44) % 22.1;
-          ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+        ctx.strokeStyle = gOut; ctx.globalAlpha = 1;
+        for (let i = 0; i < outb.length; i++) {
+          const l = outb[i], n = Math.max(2, Math.round(l.n * bp));
+          ctx.lineWidth = 1.15 * thin; ctx.setLineDash([]);
+          ctx.beginPath(); path(l.buf, n); ctx.stroke();
+          ctx.lineWidth = (3.2 + surge * 1.6) * thin; ctx.setLineDash([0.1, 22]); ctx.lineDashOffset = -(dash % 22.1);
+          ctx.beginPath(); path(l.buf, n); ctx.stroke();
         }
         ctx.setLineDash([]);
       }
+      ctx.globalAlpha = 1;
     }
 
     function step(now) {
       const t = now / 1000, dt = Math.min(0.05, t - last || 0.016);
       last = t; time = t;
-      S.mx += (S.tx - S.mx) * 0.05; S.my += (S.ty - S.my) * 0.05;
+      // the pole eases in and out, and glides after the pointer rather than jumping to it
+      if (ptr.k < 0.02) { ptr.sx = ptr.x; ptr.sy = ptr.y; }
+      const follow = 1 - Math.exp(-dt * 13);
+      ptr.sx += (ptr.x - ptr.sx) * follow; ptr.sy += (ptr.y - ptr.sy) * follow;
+      ptr.k += (ptr.target - ptr.k) * (1 - Math.exp(-dt * 5.5));
+      // pressing widens the pole on a soft spring; a tap on the orb makes the whole field ring
+      ptr.pv += ((ptr.pressT - ptr.press) * 120 - ptr.pv * 13) * dt; ptr.press += ptr.pv * dt;
+      kickV += (-kick * 60 - kickV * 7) * dt; kick += kickV * dt;
+      surge = Math.max(0, surge - dt * 0.85);
+      dash += dt * 44 * (1 + surge * 2.4);
+      // the field leans against the scroll, then swings back and settles like a compass needle
+      const sy = window.scrollY;
+      scrollV += ((sy - lastSy) / dt - scrollV) * (1 - Math.exp(-dt * 9));
+      lastSy = sy;
+      tiltV += ((clamp(scrollV / 3600, -1, 1) * -0.3 - tilt) * 42 - tiltV * 7.5) * dt; tilt += tiltV * dt;
       draw(dt);
     }
 
     build();
     if (reduce) draw(0); else {
-      gsap.ticker.add(() => { if (visible) step(performance.now()); });
-      window.addEventListener('pointermove', (e) => { S.tx = (e.clientX / window.innerWidth) * 2 - 1; S.ty = (e.clientY / window.innerHeight) * 2 - 1; }, { passive: true });
-      onVisible(canvas, (v) => { visible = v; });
+      gsap.ticker.add(() => step(performance.now()));
+      const seen = (e) => { ptr.x = e.clientX; ptr.y = e.clientY; ptr.target = 1; };
+      const gone = () => { ptr.target = 0; ptr.pressT = 0; };
+      window.addEventListener('pointermove', seen, { passive: true });
+      window.addEventListener('pointerdown', (e) => {
+        seen(e);
+        if (!(e.target.closest && e.target.closest('a, button, #heroStage'))) ptr.pressT = 1;
+      }, { passive: true });
+      window.addEventListener('pointerup', (e) => { ptr.pressT = 0; if (e.pointerType !== 'mouse') ptr.target = 0; }, { passive: true });
+      window.addEventListener('pointercancel', gone, { passive: true });
+      window.addEventListener('blur', gone);
+      document.documentElement.addEventListener('mouseleave', gone);
     }
     let rt = 0;
     window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { build(); if (reduce) draw(0); }, 120); });
-    return { state: S };
+    return {
+      state: S,
+      // a tap on the orb: the field rings, and the lines leaving it quicken
+      surge() { surge = 1; kickV += 8; }
+    };
   }
 
   /* ---------------------------------------------------------------------
@@ -590,21 +799,15 @@
     if (reduce) return;
     reveals(sec);
     rise($$('.trio__item', sec), $('.trio', sec), { stagger: 0.12 });
-    gsap.from($('.facts', sec), { y: 36, autoAlpha: 0, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: $('.facts', sec), start: 'top 88%', once: true } });
     splitLines($('#mission'), 'top 84%');
     rise($$('.values li', sec), $('.values', sec), { stagger: 0.09 });
   }
 
   function initWhat() {
-    const sec = $('#what'), venn = $('.venn', sec);
+    const sec = $('#what');
     if (reduce) return;
     reveals(sec);
-    // two disciplines slide together into one shared core
-    gsap.fromTo(venn, { '--gap': 1 }, { '--gap': 0, ease: 'none', scrollTrigger: { trigger: $('#duo'), start: 'top 78%', end: 'top 22%', scrub: 0.4 } });
-    $$('.duo__col', sec).forEach((col, i) => {
-      gsap.from($$(':scope > *', col), { x: i === 0 ? -28 : 28, autoAlpha: 0, duration: 0.95, ease: 'power3.out', stagger: 0.07, scrollTrigger: { trigger: col, start: 'top 82%', once: true } });
-      rise($$('.deflist li', col), $('.deflist', col), { y: 18, stagger: 0.06 });
-    });
+    rise($$('.lineitem', sec), $('#lines'), { y: 56, stagger: 0.1, duration: 1.05, ease: 'expo.out' });
     rise($$('.traits li', sec), $('.traits', sec), { y: 14, stagger: 0.04, duration: 0.7 });
   }
 
@@ -708,42 +911,24 @@
     });
   }
 
-  function initValue() {
-    const sec = $('#value');
-    if (reduce) return;
-    reveals(sec);
-    $$('[data-bridge]', sec).forEach((fig) => {
-      const tl = gsap.timeline({ scrollTrigger: { trigger: fig, start: 'top 78%', once: true } });
-      tl.from(fig, { y: 40, autoAlpha: 0, duration: 1, ease: 'power3.out' })
-        .from($$('.brow__k', fig), { autoAlpha: 0, x: -14, duration: 0.6, ease: 'power2.out', stagger: 0.07 }, 0.15)
-        .from($$('.brow__track i', fig), { scaleX: 0, duration: 0.85, ease: 'expo.out', stagger: 0.11 }, 0.25);
-    });
+  // Each industry is a chapter: a heading that stays put while its rows come in beside it.
+  function initChapter(ch) {
+    reveals($('.chapter__head', ch));
+    const rows = $$('.row', ch);
+    rise(rows, $('.rows', ch), { y: 22, stagger: 0.055, duration: 0.8, scrollTrigger: { trigger: $('.rows', ch), start: 'top 84%', once: true } });
   }
-
+  // The financial services chapter holds the pinned product gallery, so the chapters
+  // below it are set up after the gallery (see boot) to measure correctly.
   function initIndustries() {
-    const sec = $('#industries'), panels = $$('.ind__panel', sec);
-    const wide = () => window.matchMedia('(min-width: 1100px)').matches;
-    const activate = (p) => {
-      if (p.classList.contains('is-active')) return;
-      panels.forEach((x) => { const on = x === p; x.classList.toggle('is-active', on); $('.ind__tab', x).setAttribute('aria-expanded', on ? 'true' : 'false'); });
-      if (!reduce) gsap.from($$('.ind__intro > *, .ind__list li, .ind__k, .chips li', p), { y: 16, autoAlpha: 0, duration: 0.7, ease: 'power3.out', stagger: 0.026, delay: wide() ? 0.38 : 0.15, overwrite: true });
-      setTimeout(() => ScrollTrigger.refresh(), 950);
-    };
-    panels.forEach((p) => {
-      $('.ind__tab', p).addEventListener('click', () => activate(p));
-      let timer = 0;
-      p.addEventListener('pointerenter', (e) => {
-        if (e.pointerType !== 'mouse' || !wide()) return;
-        timer = setTimeout(() => activate(p), 140);
-      });
-      p.addEventListener('pointerleave', () => clearTimeout(timer));
-    });
+    const sec = $('#industries');
     if (reduce) return;
-    reveals(sec);
-    gsap.from(panels, {
-      y: 60, autoAlpha: 0, duration: 1.1, ease: 'expo.out', stagger: 0.08,
-      scrollTrigger: { trigger: $('#ind'), start: 'top 82%', once: true }
-    });
+    reveals($('.wrap', sec));
+    rise($$('.indnav a', sec), $('.indnav', sec), { y: 18, stagger: 0.05, duration: 0.7 });
+    initChapter($('#ind-fs'));
+  }
+  function initIndustriesRest() {
+    if (reduce) return;
+    $$('#industries .chapter:not(#ind-fs)').forEach(initChapter);
   }
 
   function productTimeline(prod) {
@@ -820,18 +1005,6 @@
         .from($('span', li), { autoAlpha: 0, x: 16, duration: 0.8, ease: 'power3.out' }, 0.25)
         .fromTo(li, { '--rule': 0 }, { '--rule': 1, duration: 1.3, ease: 'expo.out' }, 0.1);
     });
-  }
-
-  function initRoadmap() {
-    const sec = $('#products');
-    if (reduce) return;
-    reveals(sec);
-    // built in order: the foundation first, solutions on top, then the control layer over all of it
-    const tl = gsap.timeline({ scrollTrigger: { trigger: $('#tiers'), start: 'top 70%', once: true }, defaults: { ease: 'power3.out' } });
-    tl.from($$('.tier__k', sec), { autoAlpha: 0, x: -14, duration: 0.6, stagger: { each: 0.12, from: 'end' } }, 0)
-      .from($$('.tier--foundation .pcard', sec), { y: 70, autoAlpha: 0, duration: 1, ease: 'expo.out', stagger: 0.12 }, 0)
-      .from($$('.tier--solutions .pcard', sec), { y: -46, autoAlpha: 0, duration: 0.85, ease: 'back.out(1.3)', stagger: 0.08 }, 0.55)
-      .from($$('.tier--control .pcard', sec), { scaleX: 0.6, autoAlpha: 0, transformOrigin: '50% 50%', duration: 0.9, ease: 'expo.out' }, 1.25);
   }
 
   function initEngage() {
@@ -989,7 +1162,8 @@
   function boot() {
     const loader = $('#loader'), video = $('#loaderVideo');
     const signal = createSignal();
-    const heroViz = createHeroViz($('#heroCanvas'), signal.pos);
+    const flow = createFlow($('#flowCanvas'), signal.pos);
+    signal.onTap((x, y) => flow.surge(x, y));
 
     // sections are initialised top to bottom so pinned scenes measure correctly
     initAbout();
@@ -997,10 +1171,9 @@
     initShift();
     initGap();
     initBring();
-    initValue();
     initIndustries();
     initWork();
-    initRoadmap();
+    initIndustriesRest();
     initEngage();
     initDeliver();
     initWho();
@@ -1010,13 +1183,11 @@
 
     if (reduce) { if (loader) loader.remove(); return; }
 
-    gsap.to(heroViz.state, { scroll: 1, ease: 'none', scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true } });
-
     const intro = gsap.timeline({ paused: true, defaults: { ease: 'expo.out' } });
     intro
       .from('.nav__inner > *', { y: -22, autoAlpha: 0, duration: 0.9, stagger: 0.07 }, 0)
       .call(() => signal.start(), null, 0.1)
-      .to(heroViz.state, { intro: 1, duration: 2.6, ease: 'power2.out' }, 0.15)
+      .to(flow.state, { intro: 1, duration: 2.6, ease: 'power2.out' }, 0.15)
       .from('.hero__label', { autoAlpha: 0, y: 14, duration: 0.8 }, 0.25)
       .from('.hero__line-in', { yPercent: 114, duration: 1.3, stagger: 0.12 }, 0.3)
       .from('.hero__lede, .hero__cta > *', { autoAlpha: 0, y: 24, duration: 1, stagger: 0.08 }, 0.8)
