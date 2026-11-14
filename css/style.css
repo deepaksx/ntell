@@ -863,6 +863,89 @@ html:not(.js) .hero__pick { cursor: default; }
   .indkey .tag--plain { margin-left: 0; }
 }
 
+/* ---------- phones: the same page, said in less ----------
+   Below 700px every section stays, but each one shows less. A sentence that only expands on its own heading
+   is hidden, lists that stacked full-width become compact, the product gallery is swiped sideways, and each
+   capability is one line that opens on a tap. Nothing in this block applies above 700px. */
+.row__toggle { display: none; }
+@media (max-width: 699px) {
+  :root { --sec: 68px; }
+  .split-head { margin-bottom: 28px; }
+
+  /* who we are: the mission, then the four values by name */
+  .mission { margin-top: 44px; }
+  .values { gap: 0 20px; margin-top: 32px; }
+  .values li { padding: 13px 0; }
+  .values p { display: none; }
+
+  /* what we do: four short cards, without their sub-lists */
+  .lineitem { padding: 18px 20px 20px; border-radius: 18px; gap: 6px; }
+  .lineitem__k { margin-bottom: 6px; }
+  .lineitem h3 { font-size: 1.4rem; }
+  .lineitem ul { display: none; }
+  .traits { margin-top: 22px; }
+
+  /* industries: the five names on one line that scrolls sideways */
+  .indnav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
+  .indnav::-webkit-scrollbar { display: none; }
+  .indnav a { flex: none; scroll-snap-align: start; }
+  .chapter { padding-block: 52px; }
+  .chapter:first-of-type { margin-top: 36px; }
+  .chapter__grid { gap: 22px; }
+
+  /* each capability is its name, and opens on a tap to say what it is and what covers it */
+  .taps .row { display: block; padding: 0; }
+  .taps .row h4 { padding: 15px 44px 15px 0; }
+  .taps .row p, .taps .row .tag { display: none; }
+  .taps .row.is-open p { display: block; padding-right: 12px; }
+  .taps .row.is-open .tag { display: inline-flex; margin: 10px 0 18px; }
+  .taps .row__toggle { display: block; position: absolute; inset: 0; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .taps .row__toggle::after {
+    content: ""; position: absolute; right: 4px; top: 19px; width: 14px; height: 14px;
+    background: linear-gradient(var(--ink), var(--ink)) center / 100% 1.5px no-repeat, linear-gradient(var(--ink), var(--ink)) center / 1.5px 100% no-repeat;
+    transition: background-size 0.3s var(--ease), rotate 0.3s var(--ease);
+  }
+  .taps .row.is-open .row__toggle::after { background-size: 100% 1.5px, 1.5px 0; rotate: 180deg; }
+
+  /* the product gallery: three cards side by side, swiped, as it is scrolled on a wide screen */
+  .suite { margin-top: 48px; }
+  .work__pin, .work__pin.is-pinned { overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; }
+  .work__pin::-webkit-scrollbar { display: none; }
+  .work__track { flex-direction: row; align-items: flex-start; width: max-content; gap: 12px; }
+  .prod { width: 86vw; scroll-snap-align: center; }
+  .prod__info { padding: 22px 20px; gap: 12px; }
+  .prod__info .chips { display: none; }
+  .prod .chat { display: none; }
+  .loop { margin-top: 56px; }
+
+  /* the gap: each point without its struck-through opposite */
+  .take__not { display: none; }
+
+  /* how we work: what sets us apart, as six short lines */
+  .apart span { display: none; }
+  .apart li { padding: 11px 0; }
+
+  /* how we engage: each stage is its name, its aim and what you get */
+  .gate { padding-bottom: 34px; }
+  .gate__q { margin-bottom: 0.2em; }
+  .gate__do { display: none; }
+  .gate__out { margin-top: 14px; }
+
+  /* how we deliver: what you own by name, and the places by name and status */
+  .owns li { padding: 14px 12px 14px 0; }
+  .owns li + li { padding-left: 12px; }
+  .owns span { display: none; }
+  .where { margin-top: 64px; }
+  .place p:not(.cap) { display: none; }
+
+  /* who builds it: the statement, and the marquee that carries the rest */
+  .who__cols { display: none; }
+
+  /* contact: three ways in, without their sub-lists, and the address once */
+  .way ul { display: none; }
+  .contact__rows > div:first-child { display: none; }
+}
+
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }

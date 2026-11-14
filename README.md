@@ -138,6 +138,24 @@ adoption dots) are left out.
   holds a pinned horizontal gallery with three animated product screens.
   **How we engage**: a vertical timeline that the orb travels down.
 
+## On a phone
+
+Below 700px the page keeps every section but shows less in each one. The rules
+are in one block at the end of `css/style.css` ("phones: the same page, said in
+less"), and nothing in it applies to wider screens.
+
+- **Capability rows** show their name only. A tap opens a row to show its
+  sentence and its tag. The button is added by `initRowTaps` in `js/main.js`;
+  without JavaScript every row is shown in full.
+- **The product gallery** is three cards side by side, swiped sideways.
+- **The industry links** are one line that scrolls sideways.
+- **Hidden on a phone**: the sentences under the four values, the sub-lists in
+  What we do and in Contact, the struck-through lines in The gap, the
+  descriptions in What sets us apart, the three steps inside each stage of How
+  we engage, the sentences under "you own it all" and under each place, the two
+  paragraphs in Who builds it, and the second copy of the email address. To
+  show any of them again, remove its `display: none` line from the block.
+
 ## Editing content
 
 - Text is plain HTML in `index.html`, one commented block per section.

@@ -1146,6 +1146,28 @@
     });
   }
 
+  // On a phone each capability row is its name alone and opens on a tap (the styles are in the phone block of
+  // the stylesheet). The button is a real one, so it also works from a keyboard and is announced properly.
+  function initRowTaps() {
+    let t = 0;
+    const settle = () => { clearTimeout(t); t = setTimeout(() => ScrollTrigger.refresh(), 220); };
+    $$('.row').forEach((row, i) => {
+      const text = $('p', row), name = $('h4', row);
+      if (!text || !name) return;
+      text.id = text.id || `cap-${i + 1}`;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'row__toggle';
+      b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-controls', text.id);
+      b.setAttribute('aria-label', `${name.textContent}: details`);
+      b.addEventListener('click', () => {
+        b.setAttribute('aria-expanded', row.classList.toggle('is-open') ? 'true' : 'false');
+        settle();
+      });
+      row.appendChild(b);
+    });
+    html.classList.add('taps');
+  }
+
   // Each industry is a chapter: a heading that stays put while its rows come in beside it.
   function initChapter(ch) {
     reveals($('.chapter__head', ch));
@@ -1408,6 +1430,7 @@
     // sections are initialised top to bottom so pinned scenes measure correctly
     initAbout();
     initWhat();
+    initRowTaps();
     initIndustries();
     initWork();
     initIndustriesRest();
