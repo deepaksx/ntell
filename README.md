@@ -94,15 +94,31 @@ adoption dots) are left out.
   by it, and one that passes in front casts its shadow on it. Each model runs
   its own loop: windows light floor by floor, a coin drops into the bank, the
   flag flies, a scanner sweeps the shelf, the halves meet and the bars rise.
-  Dragging the orb (or anywhere inside the orbit) turns the system and it
-  settles on the nearest satellite; a satellite can also be clicked, tapped or
-  reached with Tab and the arrow keys, and the list at the foot of the hero
-  picks one directly. Whichever is at the front sets the last word of the
-  headline, the label above it, the paragraph below and the second button. On
-  load the satellites swing out of the orb and come to rest on Enterprise; as
-  the page scrolls they draw back into it. Without WebGL the hero works
-  without them and the list still changes the text. With reduced motion they
-  are drawn once, standing still.
+  Whichever satellite is at the front sets the last word of the headline, the
+  label above it, the paragraph below and the second button. On load the
+  satellites swing out of the orb and come to rest on Enterprise; as the page
+  scrolls they draw back into it. Everything heavy (models, shaders, one unseen
+  frame) is prepared while the opening sting still covers the page.
+- **Two things to turn**: a drag that starts on the orb turns the orb alone. A
+  drag that starts in the orbit round it, on a satellite or in the space
+  between them, turns the orbit: sideways brings the next satellite to the
+  front and it settles there, up and down tips the plane of the orbit, far
+  enough to see the satellites from underneath but never over the top. On a
+  touch screen a drag that reaches the end of the tilt carries on into the
+  page. A sideways trackpad swipe turns the orbit too. A satellite can also be
+  clicked, tapped or reached with Tab and the arrow keys, and the list at the
+  foot of the hero picks one directly. Moving the pointer over the field bends
+  the lines only: the orb and the satellites do not react to it.
+- **Sound and touch**: a soft note when a satellite comes to the front, each
+  industry with its own pitch, and a lower one each time the orb lands on a
+  heading's full stop; on phones that support it a tick is felt as well. The
+  sounds are synthesised in `js/main.js` (no audio files). Browsers only allow
+  sound after a first tap, click or key press. The speaker button in the nav
+  turns it all off and the choice is remembered.
+- **Fallbacks**: without WebGL, or on a machine that would draw it in
+  software, the hero works without the satellites and the list still changes
+  the text. With reduced motion they are drawn once, standing still. If frames
+  run long the layer steps its own quality down.
 - **What is changing**: a pinned canvas scene where a layered organisation
   chart reorganises into small teams with agent rings.
 - **How we work**: sticky stacking cards. **Industries**: each chapter heading

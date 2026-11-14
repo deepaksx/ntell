@@ -563,6 +563,13 @@ export function createStudio(canvas, opts = {}) {
 
 /* ---------------------------------------------------------------------
    The hero system: five satellites on one orbit round the signal orb.
+
+   Two things can be turned, each from its own place. A drag that starts on
+   the orb turns the orb alone (main.js). A drag that starts in the orbit
+   round it, on a satellite or in the space between them, turns the orbit:
+   sideways brings the next satellite to the front, up and down tips the
+   plane of the orbit, far enough to look at the satellites from underneath
+   but never over the top. A sideways swipe on a trackpad turns it too.
    --------------------------------------------------------------------- */
 const N = ORDER.length, STEP = TAU / N;
 const CAM_D = 11;                 // camera distance, in orb radii
@@ -571,8 +578,10 @@ const ECC = 0.26;                 // the orbit swings wider behind the orb, so t
 const ORB_VIS = 0.9925;           // the drawn orb's radius as a share of its element's half-size
 const POSE = { enterprise: 2.2, finance: 1.4, government: 1.1, consumer: 2.3, deals: 5 };  // each loop's best moment, for the still version
 const SPAN_W = 2.42, SPAN_H = 1.84; // the layer's size, in orb diameters
+const TIP_MIN = -0.95, TIP_MAX = 0.2; // how far the orbit's plane can be tipped: back to see it from below, forward a little
+const TAKE = 0.56;                // how far towards the front a satellite must come before the hero changes over to it
 
-function initHero(ntell) {
+async function initHero(ntell) {
   const stage = document.getElementById('heroStage');
   const gsap = window.gsap;
   if (!stage || !gsap || !ntell) return;
@@ -592,21 +601,26 @@ function initHero(ntell) {
     if (lose) lose.loseContext();
     if (!forced && !still && /swiftshader|llvmpipe|softpipe|software|basic render/i.test(name)) return;
   } catch (err) { return; }
+
+  // Everything heavy is done a piece at a time, a frame apart, while the opening animation still covers
+  // the page: the studio, each model, the shaders, and one unseen frame that sends it all to the graphics
+  // card. By the time the hero is shown there is nothing left to wait for, so nothing can make it stutter.
+  // If this file arrives late, after the hero has already begun to show, it waits for the hero's own
+  // entrance to finish first rather than interrupt it.
+  const nextFrame = () => new Promise((done) => requestAnimationFrame(() => done()));
+  if (signal.started && !still) await new Promise((done) => setTimeout(done, 3000));
+  await nextFrame();
   const canvas = document.createElement('canvas');
   let studio;
   try { studio = createStudio(canvas, { shadowSize: window.innerWidth < 860 ? 1024 : 2048 }); } catch (err) { return; }
   const { renderer, scene } = studio;
   const kit = createKit();
-
-  const wrap = document.createElement('div');
-  wrap.className = still ? 'sats sats--still' : 'sats'; wrap.setAttribute('aria-hidden', 'true');
-  wrap.appendChild(canvas);
-  // moving, the layer follows the travelling orb; still, it sits in the stage over the static one
-  if (still) stage.appendChild(wrap); else document.getElementById('signal').after(wrap);
+  await nextFrame();
 
   const camera = new THREE.PerspectiveCamera(17, SPAN_W / SPAN_H, 1, 40);
   camera.position.set(0, Math.sin(CAM_EL) * CAM_D, Math.cos(CAM_EL) * CAM_D);
   camera.lookAt(0, 0, 0);
+  const toCamera = camera.position.clone().normalize();
 
   // the orb itself is drawn on its own canvas underneath. Here it only holds depth, and catches shadows.
   const occluder = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 40), new THREE.MeshBasicMaterial({ colorWrite: false }));
@@ -615,16 +629,32 @@ function initHero(ntell) {
   catcher.receiveShadow = true; catcher.renderOrder = -1;
   scene.add(occluder, catcher);
   // the orb's own light on whatever passes close to it
-  const orbLight = new THREE.PointLight(0xFF2F5C, 2.2, 3.4, 1.6);
-  scene.add(orbLight);
+  scene.add(new THREE.PointLight(0xFF2F5C, 2.2, 3.4, 1.6));
 
-  const sats = ORDER.map((key, i) => { const s = buildSatellite(key, kit); s.t0 = -i * 1.7; scene.add(s.root); return s; });
+  const sats = [];
+  for (let i = 0; i < N; i++) {
+    const s = buildSatellite(ORDER[i], kit);
+    s.t0 = -i * 1.7; scene.add(s.root); sats.push(s);
+    await nextFrame();
+  }
 
   // the orbit: a hairline, with two small signals travelling along it
   const rig = new THREE.Group();
   scene.add(rig);
   let ringMesh = null;
   const beads = [0, 1].map(() => { const m = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), kit.mat.glow); rig.add(m); return m; });
+
+  const wrap = document.createElement('div');
+  wrap.className = still ? 'sats sats--still' : 'sats'; wrap.setAttribute('aria-hidden', 'true');
+  wrap.appendChild(canvas);
+  // moving, the layer follows the travelling orb; still, it sits in the stage over the static one
+  if (still) stage.appendChild(wrap); else document.getElementById('signal').after(wrap);
+  // two places to take hold: the orbit (everything round the orb), and over it the orb itself
+  if (!still) {
+    const zone = document.createElement('span'), core = document.createElement('span');
+    zone.className = 'hero__orbit'; core.className = 'hero__core';
+    stage.prepend(zone, core);
+  }
 
   // hit areas: real buttons, so each satellite can be reached by pointer, touch or keyboard
   const names = hero ? hero.items.map((it) => it.name) : ORDER;
@@ -645,10 +675,12 @@ function initHero(ntell) {
   stage.appendChild(tip);
 
   const S = {
-    yaw: 0, vel: 0, target: 0, dragging: false, auto: false,
-    index: 0, hover: -1, focus: -1,
-    deploy: 0, launched: false, spinIn: 0, nudge: 0, touched: false,
-    tilt: 0, tiltV: 0, px: 0, py: 0, pxT: 0, pyT: 0,
+    yaw: 0, vel: 0, target: 0,        // the orbit's turn, its speed, and where it is coming to rest
+    slot: 0, index: 0,                // the satellite the hero is showing: counted round and round, and as 0 to 4
+    tip: 0, chain: 0,                 // how far the plane is tipped, and the speed of any scroll a drag has handed on
+    dragging: false, wheeling: false, touch: false, touched: false,
+    hover: -1, focus: -1,
+    deploy: 0, spinIn: 0, nudge: 0, launched: false, warm: false,
     ring: 1.62, size: 0.31, s0: 1, W: 1, H: 1, shown: false, t: 0, last: 0, lastSurge: 0
   };
   // Quality steps down if frames run long: full, then standard pixel density, then no shadows, then off.
@@ -663,7 +695,6 @@ function initHero(ntell) {
   const hov = sats.map(() => 0);
   const mod = (i) => ((i % N) + N) % N;
   const radius = (th) => S.ring * (1 + (ECC * (1 - Math.cos(th))) / 2);
-  const slotOf = (yaw) => mod(Math.round(-yaw / STEP));
 
   function build() {
     const r = stage.getBoundingClientRect();
@@ -690,11 +721,16 @@ function initHero(ntell) {
     const px = 1 / half, pts = [];
     for (let j = 0; j < 96; j++) { const a = (j / 96) * TAU, rr = radius(a); pts.push(new THREE.Vector3(Math.sin(a) * rr, 0, Math.cos(a) * rr)); }
     ringMesh = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 240, 0.62 * px, 6, true), kit.haze(PAL.ink, 0.2));
+    ringMesh.position.y = -0.16;
     rig.add(ringMesh);
     beads.forEach((b) => b.scale.setScalar(2.4 * px));
   }
 
-  function setIndex(i, dir) {
+  // The hero shows one satellite at a time. Which one is kept as a count that runs on round the orbit,
+  // so going forwards from the fifth to the first is one step, not four steps back.
+  function setSlot(slot, dir) {
+    S.slot = slot;
+    const i = mod(slot);
     if (i === S.index) return;
     S.index = i;
     sats[i].t0 = S.t;
@@ -702,38 +738,68 @@ function initHero(ntell) {
     if (hero) hero.show(i, dir);
     if (flow && !still && S.t - S.lastSurge > 0.5) { flow.surge(); S.lastSurge = S.t; }
   }
+  // while a hand is turning it: change over once the next satellite is most of the way to the front
+  function follow() {
+    let p = -S.yaw / STEP - S.slot, guard = 0;
+    while (p > TAKE && guard++ < N) { setSlot(S.slot + 1, 1); p -= 1; }
+    while (p < -TAKE && guard++ < N) { setSlot(S.slot - 1, -1); p += 1; }
+  }
+  // when the hand lets go: choose the satellite to come to rest on (lead is how far its speed would carry it)
+  function settle(lead) {
+    const slot = Math.round(-S.yaw / STEP - lead);
+    setSlot(slot, slot >= S.slot ? 1 : -1);
+    S.target = -slot * STEP;
+  }
   // turn to a satellite by the shorter way round
   function goTo(i) {
-    i = mod(i);
-    const here = Math.round(-S.yaw / STEP);
-    let d = i - mod(here);
+    let d = mod(i) - mod(S.slot);
     if (d > N / 2) d -= N; if (d < -N / 2) d += N;
-    const target = -(here + d) * STEP;
-    if (i === S.index && Math.abs(target - S.target) < 1e-6) return;
-    const dir = target <= S.target ? 1 : -1;
-    S.target = target;
-    S.auto = true; S.dragging = false; S.touched = true;
-    setIndex(i, dir);
+    if (!d) return;
+    S.dragging = false; S.touched = true;
+    setSlot(S.slot + d, d > 0 ? 1 : -1);
+    S.target = -S.slot * STEP;
     if (still) frame();
   }
   const step = (d) => goTo(S.index + d);
 
   let dragAt = 0;
-  signal.on('dragstart', () => { S.dragging = true; S.auto = false; S.touched = true; S.vel = 0; dragAt = performance.now(); });
+  signal.on('dragstart', (type) => {
+    S.dragging = true; S.touched = true; S.touch = type !== 'mouse';
+    S.vel = 0; S.chain = 0; dragAt = performance.now();
+  });
   signal.on('drag', (dx, dy) => {
-    const d = dx / Math.max(40, signal.pos.r * 1.05);
+    const r = Math.max(40, signal.pos.r);
     const now = performance.now(), dt = clamp((now - dragAt) / 1000, 0.004, 0.1);
     dragAt = now;
+    // sideways turns the orbit
+    const d = dx / (r * 1.05);
     S.yaw += d; S.vel = lerp(S.vel, d / dt, 0.4);
-    S.tiltV += dy * 0.02;
+    follow();
+    // up and down tips it; a drag that is mostly sideways hardly tips it at all
+    const reach = r * (S.touch ? 1.25 : 1.7);
+    const share = smooth((Math.abs(dy) / (Math.abs(dx) + Math.abs(dy) + 1e-3)) * 1.8);
+    const want = S.tip + (dy * share) / reach;
+    S.tip = clamp(want, TIP_MIN, TIP_MAX);
+    // at the end of its travel a finger's drag carries on into the page, the way one scroller hands on to the next
+    if (S.touch && want !== S.tip) {
+      const px = -(want - S.tip) * reach;
+      window.scrollBy(0, px);
+      S.chain = lerp(S.chain, px / dt, 0.5);
+    } else S.chain = 0;
   });
   signal.on('release', () => {
     if (!S.dragging) return;
     S.dragging = false;
+    if (performance.now() - dragAt > 120) { S.vel = 0; S.chain = 0; }
     // a flick can carry it over the next boundary, but never past a satellite it has not reached
-    if (performance.now() - dragAt > 120) S.vel = 0;
-    S.target = Math.round(S.yaw / STEP + clamp((S.vel * 0.22) / STEP, -0.49, 0.49)) * STEP;
+    settle(clamp((S.vel * 0.22) / STEP, -0.49, 0.49));
     S.vel = clamp(S.vel, -7, 7);
+    // and a scroll that was handed on keeps a little of its speed
+    if (Math.abs(S.chain) > 320) {
+      const y = window.scrollY + clamp(S.chain * 0.3, -900, 900);
+      if (ntell.lenis) ntell.lenis.scrollTo(y, { duration: 0.9 }); else window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+    S.chain = 0;
   });
   // a tap that lands on a satellite brings it round; anything else is the orb's
   signal.on('tap', (x, y) => {
@@ -743,60 +809,66 @@ function initHero(ntell) {
     if (best === S.index) sats[best].play(); else goTo(best);
     return true;
   });
-  if (hero) hero.onPick((i) => goTo(i));
   stage.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') { step(1); e.preventDefault(); }
     else if (e.key === 'ArrowLeft') { step(-1); e.preventDefault(); }
   });
-  window.addEventListener('pointermove', (e) => {
-    if (e.pointerType !== 'mouse') return;
-    const p = signal.pos;
-    S.pxT = clamp((e.clientX - p.x) / (window.innerWidth * 0.5), -1, 1);
-    S.pyT = clamp((e.clientY - p.y) / (window.innerHeight * 0.5), -1, 1);
-  }, { passive: true });
+  // a sideways swipe on a trackpad (or shift and the wheel) turns the orbit; up and down still scrolls the page
+  let wheelT = 0;
+  stage.addEventListener('wheel', (e) => {
+    if (still || !S.launched || G.off || signal.state.stageU > 0.3) return;
+    const dx = e.deltaX * (e.deltaMode === 1 ? 16 : 1);
+    if (Math.abs(dx) < 0.5 || Math.abs(dx) < Math.abs(e.deltaY) * 1.3) return;
+    e.preventDefault(); e.stopPropagation();
+    S.wheeling = true; S.touched = true; S.vel = 0;
+    S.yaw -= clamp(dx, -90, 90) / Math.max(40, signal.pos.r * 1.7);
+    follow();
+    clearTimeout(wheelT);
+    wheelT = setTimeout(() => { S.wheeling = false; settle(0); }, 140);
+  }, { passive: false });
 
-  const v = new THREE.Vector3(), e = new THREE.Euler();
+  const v = new THREE.Vector3(), up = new THREE.Vector3(), e = new THREE.Euler(), qRig = new THREE.Quaternion(), q = new THREE.Quaternion();
   const fixed = { x: 0, y: 0, r: 1, home: 1, live: true };
   function frame() {
     let pos = signal.pos;
-    if (still) { const r = stage.getBoundingClientRect(); fixed.x = r.left + r.width / 2; fixed.y = r.top + r.height / 2; fixed.r = r.width / 2; pos = fixed; S.yaw = S.target; S.vel = 0; }
-    if (!pos.live || !S.launched || G.off) return;
+    if (still || S.warm) { const r = stage.getBoundingClientRect(); fixed.x = r.left + r.width / 2; fixed.y = r.top + r.height / 2; fixed.r = r.width / 2; pos = fixed; }
+    if (still) { S.yaw = S.target; S.vel = 0; }
+    if (!pos.live || !(S.launched || S.warm) || G.off) return;
     const now = still ? 0 : performance.now() / 1000, dt = Math.min(0.05, now - S.last || 0.016);
     S.last = now; S.t = now;
     // the satellites belong to the hero: they draw back into the orb as it rolls away
     const home = smooth((pos.home - 0.42) / 0.5);
-    if (home <= 0.002) { if (S.shown) { wrap.style.visibility = 'hidden'; S.shown = false; G.last = 0; stage.classList.remove('has-sats'); } return; }
-    if (!S.shown) { S.shown = true; wrap.style.visibility = 'visible'; stage.classList.add('has-sats'); }
-    if (!still && !forced) {
-      const real = performance.now(), gap = real - G.last;
-      G.last = real;
-      if (gap < 250) { G.ema += (gap - G.ema) * 0.05; G.n++; }
-      if (G.n > 100 && G.ema > 36) { easeOff(); if (G.off) return; }
+    if (!S.warm) {
+      if (home <= 0.002) {
+        if (S.shown) { wrap.style.visibility = 'hidden'; S.shown = false; G.last = 0; stage.classList.remove('has-sats'); }
+        if (!S.dragging) S.tip = 0;   // and the orbit is level again when they come back
+        return;
+      }
+      if (!S.shown) { S.shown = true; wrap.style.visibility = 'visible'; stage.classList.add('has-sats'); }
+      if (!still && !forced) {
+        const real = performance.now(), gap = real - G.last;
+        G.last = real;
+        if (gap < 250) { G.ema += (gap - G.ema) * 0.05; G.n++; }
+        if (G.n > 100 && G.ema > 36) { easeOff(); if (G.off) return; }
+      }
+      // turning: free while a hand is on it, then a spring to the chosen satellite
+      if (S.dragging) S.vel *= 0.86;
+      else if (!S.wheeling) {
+        S.vel += ((S.target - S.yaw) * 46 - S.vel * 10.5) * dt;
+        S.yaw += S.vel * dt;
+      }
     }
-
-    // turning: free while dragged, then a spring to the chosen satellite
-    if (!S.dragging) {
-      const acc = (S.target - S.yaw) * 46 - S.vel * 10.5;
-      S.vel += acc * dt;
-      const d = S.vel * dt;
-      S.yaw += d;
-      if (Math.abs(d) > 1e-5) signal.spin([0.1, 1, 0], d * 0.85);
-      if (S.auto && Math.abs(S.target - S.yaw) < 0.02 && Math.abs(S.vel) < 0.05) S.auto = false;
-    } else S.vel *= 0.86;
-    if (!S.auto && S.deploy > 0.98) {
-      const i = slotOf(S.yaw);
-      if (i !== S.index) { let d = i - S.index; if (d > N / 2) d -= N; if (d < -N / 2) d += N; setIndex(i, d > 0 ? 1 : -1); }
-    }
-    S.tiltV += (-S.tilt * 70 - S.tiltV * 9) * dt; S.tilt = clamp(S.tilt + S.tiltV * dt, -0.3, 0.3);
-    S.px += (S.pxT - S.px) * (1 - Math.exp(-dt * 4)); S.py += (S.pyT - S.py) * (1 - Math.exp(-dt * 4));
 
     const t = now;
-    const yaw = S.yaw + S.nudge + Math.sin(t * 0.45) * 0.025 - (1 - easeOut(S.spinIn)) * TAU * 0.86 + S.px * 0.07;
-    e.set(S.tilt * 0.5 + S.py * 0.05, 0, -0.085 + S.px * 0.02);
-    rig.rotation.copy(e);
+    const yaw = S.yaw + S.nudge + Math.sin(t * 0.45) * 0.025 - (1 - easeOut(S.spinIn)) * TAU * 0.86;
+    qRig.setFromEuler(e.set(S.tip, 0, -0.085));
+    rig.quaternion.copy(qRig);
+    up.set(0, 1, 0).applyQuaternion(qRig);
     const k = (2 * pos.r) / S.s0;
-    if (!still) wrap.style.transform = `translate3d(${pos.x.toFixed(2)}px,${pos.y.toFixed(2)}px,0) scale(${k.toFixed(4)})`;
-    wrap.style.opacity = home.toFixed(3);
+    if (!S.warm) {
+      if (!still) wrap.style.transform = `translate3d(${pos.x.toFixed(2)}px,${pos.y.toFixed(2)}px,0) scale(${k.toFixed(4)})`;
+      wrap.style.opacity = home.toFixed(3);
+    }
     const sr = stage.getBoundingClientRect();
     const away = signal.state.stageU > 0.3;
     let tipOn = -1;
@@ -808,23 +880,23 @@ function initHero(ntell) {
       const front = smooth(1 - Math.abs(wrapPi(th)) / STEP);
       hov[i] += (((S.hover === i || S.focus === i) ? 1 : 0) - hov[i]) * (1 - Math.exp(-dt * 10));
       const rr = radius(th) * lerp(0.3, 1, easeBack(dep, 1.2));
-      v.set(Math.sin(th) * rr, 0, Math.cos(th) * rr).applyEuler(e);
-      v.y += -0.16 + 0.035 * Math.sin(t * 0.9 + i * 1.9) + 0.05 * front;
+      // its place on the orbit, and its own turn within the orbit's plane: tip the plane and everything on it tips too
+      v.set(Math.sin(th) * rr, -0.16 + 0.035 * Math.sin(t * 0.9 + i * 1.9) + 0.05 * front, Math.cos(th) * rr).applyQuaternion(qRig);
       s.root.position.copy(v);
       s.root.scale.setScalar(Math.max(0.0001, S.size * (0.84 + 0.36 * front) * smooth(dep) * (1 + 0.08 * hov[i])));
-      s.root.rotation.set(0.06 * front, th + front * (-0.5 + 0.14 * Math.sin(t * 0.6 + i)), 0.05 * Math.sin(t * 0.7 + i * 2.1) * (1 - front));
+      s.root.quaternion.copy(qRig).multiply(q.setFromEuler(e.set(0.06 * front, th + front * (-0.5 + 0.14 * Math.sin(t * 0.6 + i)), 0.05 * Math.sin(t * 0.7 + i * 2.1) * (1 - front))));
       if (s.tick) s.tick(still ? POSE[s.key] : t - s.t0);
       s.tint(front);
 
       // where it is on the page, for its hit area
       const sc = screen[i], rad = s.root.scale.x;
-      v.y += rad * 0.45;
-      const depth = v.z;
+      v.addScaledVector(up, rad * 0.45);
+      const near = v.dot(toCamera) > 0;
       v.project(camera);
       sc.x = pos.x + v.x * (S.W / 2) * k; sc.y = pos.y - v.y * (S.H / 2) * k;
       sc.r = rad * (S.s0 / 2) * k * 1.15;
       const inside = Math.hypot(sc.x - pos.x, sc.y - pos.y) < pos.r * 0.94;
-      sc.on = !away && dep > 0.9 && (depth > 0 || !inside);
+      sc.on = !away && !S.warm && dep > 0.9 && (near || !inside);
       const b = hits[i], d = Math.round(Math.max(44, sc.r * 2));
       b.style.transform = `translate3d(${(sc.x - sr.left - d / 2).toFixed(1)}px,${(sc.y - sr.top - d / 2).toFixed(1)}px,0)`;
       if (d !== sc.d) { sc.d = d; b.style.width = b.style.height = `${d}px`; }
@@ -838,10 +910,9 @@ function initHero(ntell) {
       tip.style.transform = `translate3d(${(sc.x - sr.left).toFixed(1)}px,${(sc.y - sr.top + sc.r + 12).toFixed(1)}px,0) translateX(-50%)`;
     }
     tip.classList.toggle('is-on', tipOn >= 0);
-    stage.classList.toggle('is-over', S.hover >= 0);
 
     beads.forEach((b, j) => { const a = t * 0.22 + j * Math.PI + yaw, rr = radius(a); b.position.set(Math.sin(a) * rr, -0.16, Math.cos(a) * rr); b.visible = S.deploy > 0.9; });
-    if (ringMesh) { ringMesh.material.opacity = 0.2 * smooth(S.deploy * 1.4 - 0.4); ringMesh.position.y = -0.16; }
+    ringMesh.material.opacity = 0.2 * smooth(S.deploy * 1.4 - 0.4);
     renderer.render(scene, camera);
   }
 
@@ -851,33 +922,41 @@ function initHero(ntell) {
     gsap.to(S, { deploy: 1, duration: 2.1, ease: 'power2.out', delay: 0.35 });
     gsap.to(S, { spinIn: 1, duration: 2.9, ease: 'none', delay: 0.35 });
     gsap.delayedCall(1.9, () => { sats[S.index].t0 = S.t; sats[S.index].play(); });
-    // if nobody has turned it yet, it leans a little towards the next satellite and comes back: an invitation
-    const nudge = () => {
-      if (S.touched || S.dragging || S.auto || signal.state.stageU > 0.05) return;
+    // if nobody has turned it yet, it leans a little towards the next satellite and back, once: an invitation
+    gsap.delayedCall(6.5, () => {
+      if (S.touched || S.dragging || signal.state.stageU > 0.05) return;
       gsap.timeline()
-        .to(S, { nudge: -0.3, duration: 0.7, ease: 'power2.inOut' })
-        .to(S, { nudge: 0, duration: 1.5, ease: 'elastic.out(1, 0.5)' });
-    };
-    gsap.delayedCall(5.5, nudge);
-    gsap.delayedCall(13, nudge);
+        .to(S, { nudge: -0.2, duration: 0.9, ease: 'sine.inOut' })
+        .to(S, { nudge: 0, duration: 1.2, ease: 'sine.inOut' });
+    });
   }
 
   build();
   let rt = 0;
   window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { build(); if (still) frame(); }, 120); });
+  if (hero) hero.onPick((i) => goTo(i));
+  ntell.satellites = { goTo, step, state: S, sats };
+  document.documentElement.classList.add('sats-on');
   if (still) {
     S.launched = true; S.deploy = 1; S.spinIn = 1; S.touched = true;
     frame();
     window.addEventListener('load', frame);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(frame);
-  } else {
-    gsap.ticker.add(frame);
-    if (signal.started) launch(); else signal.on('start', launch);
+    return;
   }
-  ntell.satellites = { goTo, step, state: S, sats };
-  document.documentElement.classList.add('sats-on');
+  const hint = document.getElementById('heroHint');
+  if (hint) hint.textContent = 'Drag the orbit to turn it';
+  // warm up: shaders first (off the main thread where the browser can), then one frame nobody sees
+  try { if (renderer.compileAsync) await renderer.compileAsync(scene, camera); else renderer.compile(scene, camera); } catch (err) { /* it will compile on first use instead */ }
+  await nextFrame();
+  S.warm = true; S.deploy = 1; S.spinIn = 1;
+  frame();
+  S.warm = false; S.deploy = 0; S.spinIn = 0;
+  await nextFrame();
+  gsap.ticker.add(frame);
+  if (signal.started) launch(); else signal.on('start', launch);
 }
 
 if (typeof window !== 'undefined' && window.ntell && document.getElementById('heroStage')) {
-  try { initHero(window.ntell); } catch (err) { /* the hero works without its satellites */ }
+  initHero(window.ntell).catch(() => { /* the hero works without its satellites */ });
 }

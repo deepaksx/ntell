@@ -216,9 +216,9 @@
       node, mode: node.dataset.orb || 'rail',
       k: node.classList.contains('dot') ? 1.5 : 1
     }));
-    const st = { on: false, pop: 1, lx: null, ly: 0, ls: 0, dockedAt: -1, section: '', t: 0, stageU: 0, hover: 0, hoverT: 0 };
+    const st = { on: false, pop: 1, lx: null, ly: 0, ls: 0, dockedAt: -1, section: '', t: 0, stageU: 0 };
     const pos = { x: 0, y: 0, r: 0, live: false, home: 1 };
-    const drag = { on: false, x: 0, y: 0, vx: 0, vy: 0, moved: 0, used: false };
+    const drag = { on: false, orbit: false, x: 0, y: 0, vx: 0, vy: 0, moved: 0, used: false };
     let onTap = null;
     // the satellites (js/satellites.js) listen in on the orb: when it starts, and how it is being dragged
     const subs = {};
@@ -231,39 +231,39 @@
       return sticks.get(head);
     };
 
-    // drag to turn the orb, with a little momentum when it is let go
+    // Drag to turn. A drag that starts on the orb turns the orb alone, with a little momentum when it is let
+    // go. One that starts in the orbit round it (on a satellite, or in the space between them) belongs to the
+    // satellites: it turns and tips their orbit, and the orb is left as it is.
     if (!reduce && stage) {
       stage.addEventListener('pointerdown', (e) => {
         if (!st.on || st.stageU > 0.3) return;
         drag.on = true; drag.x = e.clientX; drag.y = e.clientY; drag.vx = 0; drag.vy = 0; drag.moved = 0;
+        drag.orbit = !!(subs.drag && e.target.closest && e.target.closest('.sat-hit, .hero__orbit'));
         try { stage.setPointerCapture(e.pointerId); } catch (err) { /* capture is a nicety */ }
         stage.classList.add('is-dragging');
-        emit('dragstart');
+        if (drag.orbit) emit('dragstart', e.pointerType);
         e.preventDefault();
       });
       stage.addEventListener('pointermove', (e) => {
         if (!drag.on) return;
         const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
         drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.hypot(dx, dy);
-        drag.vx = dx; drag.vy = dy;
-        orb.roll(dx, dy, Math.max(pos.r * 0.6, 40));
-        emit('drag', dx, dy);
+        if (drag.orbit) emit('drag', dx, dy);
+        else { drag.vx = dx; drag.vy = dy; orb.roll(dx, dy, Math.max(pos.r * 0.6, 40)); }
         if (!drag.used && drag.moved > 14) { drag.used = true; if (hint) hint.classList.remove('is-on'); }
       });
       const end = (e) => {
         if (!drag.on) return;
         drag.on = false; stage.classList.remove('is-dragging');
         // a cancelled touch means the page took the gesture to scroll: that is not a tap
-        // and a tap that lands on a satellite belongs to the satellite, not to the orb
         const tap = e.type === 'pointerup' && drag.moved < 6;
-        emit('release');
+        if (drag.orbit) { drag.orbit = false; emit('release'); if (tap) emit('tap', e.clientX, e.clientY); return; }
         if (tap) { drag.vx = 0; drag.vy = 0; }
+        // a tap that lands on a satellite belongs to the satellite, not to the orb
         if (tap && !emit('tap', e.clientX, e.clientY) && onTap) { onTap(pos.x, pos.y); orb.spin([0.2, 1, 0.1], 0.5); }
       };
       stage.addEventListener('pointerup', end);
       stage.addEventListener('pointercancel', end);
-      stage.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') st.hoverT = 1; });
-      stage.addEventListener('pointerleave', () => { st.hoverT = 0; });
     }
 
     function frame(time) {
@@ -314,7 +314,7 @@
         p = mix(P[k], R, eu);
         if (A[k].mode === 'stage') p.s = lerp(P[k].s, R.s, easeOut(u[k]));
         railness = eu;
-        if (u[k] <= 0) { docked = true; if (st.dockedAt !== k) { st.dockedAt = k; hit(A[k].node); } } else st.dockedAt = -1;
+        if (u[k] <= 0) { docked = true; if (st.dockedAt !== k) { st.dockedAt = k; hit(A[k].node); if (k > 0) emit('dock'); } } else st.dockedAt = -1;
       } else if (A[k].mode === 'direct') {
         p = mix(P[k - 1], P[k], v[k]); st.dockedAt = -1;
       } else {
@@ -328,17 +328,18 @@
       // so the field belongs to the hero and never comes back when the orb grows again further down
       const nearStage = A[0].mode === 'stage' && (k === 0 || (k === 1 && v[1] < 1));
       const home = nearStage ? clamp(p.s / Math.max(1, P[0].s)) : 0;
-      st.hover += (st.hoverT * (st.stageU < 0.05 ? 1 : 0) - st.hover) * 0.12;
-      p.s *= st.pop * (1 + 0.035 * st.hover + (drag.on ? 0.02 : 0));
+      // only a hand on the orb itself is felt by the orb: moving over it, or turning the orbit, leaves it alone
+      const held = drag.on && !drag.orbit;
+      p.s *= st.pop * (held ? 1.02 : 1);
 
       // roll: with the scroll always, with any sideways travel, and with whatever spin a drag left behind
       const radius = Math.max(p.s / 2, 64);
       if (st.lx !== null) orb.roll((p.x - st.lx) * 0.9, sy - st.ls, radius);
       st.lx = p.x; st.ly = p.y; st.ls = sy;
       const coasting = Math.abs(drag.vx) + Math.abs(drag.vy) > 0.08;
-      if (!drag.on && coasting) { orb.roll(drag.vx, drag.vy, Math.max(p.s * 0.3, 40)); drag.vx *= 0.955; drag.vy *= 0.955; }
+      if (!held && coasting) { orb.roll(drag.vx, drag.vy, Math.max(p.s * 0.3, 40)); drag.vx *= 0.955; drag.vy *= 0.955; }
       if (docked && k === n - 1) orb.settle(0.07);
-      else if (!drag.on && !coasting) orb.spin([0.25, 1, 0.12], dt * (0.1 + 0.25 * clamp(p.s / 400)));
+      else if (!held && !coasting) orb.spin([0.25, 1, 0.12], dt * (0.1 + 0.25 * clamp(p.s / 400)));
       orb.render();
 
       el.style.transform = `translate3d(${p.x.toFixed(2)}px,${p.y.toFixed(2)}px,0) scale(${(p.s / 100).toFixed(4)})`;
@@ -372,12 +373,96 @@
       },
       onTap(fn) { onTap = fn; },
       on(name, fn) { (subs[name] = subs[name] || []).push(fn); },
-      spin(ax, ang) { orb.spin(ax, ang); },
       state: st,
       get started() { return st.started === true; },
       setSection(name) { st.section = name; },
       hide(flag) { gsap.to(el, { autoAlpha: flag ? 0 : 1, duration: 0.25, overwrite: true }); }
     };
+  }
+
+  /* ---------------------------------------------------------------------
+     Sound and touch. A soft note when the orb's satellites change places,
+     each industry with its own pitch, and a lower one when the orb lands on
+     a heading's full stop. On phones that can, a tick is felt as well.
+     Everything is synthesised here, so there are no audio files. Browsers
+     only allow sound after a first tap, click or key press: a visitor who
+     has only scrolled hears nothing until then. The button in the nav turns
+     it all off, and the choice is remembered.
+     --------------------------------------------------------------------- */
+  function createFeedback() {
+    const btn = $('#soundToggle'), KEY = 'ntell-sound';
+    const SCALE = [523.25, 587.33, 659.25, 783.99, 880];   // one note per industry: C, D, E, G, A
+    let on = true, ctx = null, out = null, last = 0, armed = false, sw = null;
+    try { on = window.localStorage.getItem(KEY) !== 'off'; } catch (err) { /* nowhere to keep the choice */ }
+    const paint = () => {
+      if (!btn) return;
+      btn.classList.toggle('is-off', !on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btn.setAttribute('title', on ? 'Sound on' : 'Sound off');
+    };
+    // the audio engine is only made inside a real gesture, which is the only place a browser lets it start
+    const wake = () => {
+      armed = true;
+      if (!on) return;
+      if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        try { ctx = new AC(); } catch (err) { ctx = null; return; }
+        out = ctx.createGain(); out.gain.value = 0.5;
+        const soft = ctx.createBiquadFilter(); soft.type = 'lowpass'; soft.frequency.value = 5200;
+        out.connect(soft); soft.connect(ctx.destination);
+      }
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    };
+    ['pointerdown', 'keydown', 'touchend'].forEach((ev) => window.addEventListener(ev, wake, { capture: true, passive: true }));
+    const can = (gap) => {
+      if (!on || !ctx || ctx.state !== 'running') return false;
+      const now = performance.now();
+      if (now - last < gap) return false;
+      last = now;
+      return true;
+    };
+    // one plucked note: a quick rise, a short fall, and a slight bend down onto the pitch
+    const note = (freq, vol, dur, bend = 1, type = 'sine', at = 0) => {
+      const t = ctx.currentTime + at, o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq * bend, t); o.frequency.exponentialRampToValueAtTime(freq, t + 0.05);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.007); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(out); o.start(t); o.stop(t + dur + 0.04);
+    };
+    const buzz = (ms) => {
+      if (!on || !armed) return;
+      try {
+        if (navigator.vibrate) { navigator.vibrate(ms); return; }
+        // iPhones have no vibration call, but Safari gives a switch control a tick when it flips
+        if (!window.matchMedia('(pointer: coarse)').matches) return;
+        if (!sw) {
+          sw = document.createElement('label');
+          sw.setAttribute('aria-hidden', 'true');
+          sw.style.cssText = 'position:fixed;left:-200px;top:0;opacity:0;pointer-events:none';
+          const box = document.createElement('input');
+          box.type = 'checkbox'; box.setAttribute('switch', ''); box.tabIndex = -1;
+          sw.appendChild(box); document.body.appendChild(sw);
+        }
+        sw.click();
+      } catch (err) { /* feedback is a nicety */ }
+    };
+    const fx = {
+      // a satellite comes to the front
+      tick(i) { buzz(9); if (!can(70)) return; const f = SCALE[((i % 5) + 5) % 5]; note(f, 0.085, 0.3, 1.03); note(f * 2, 0.02, 0.14, 1, 'triangle'); },
+      // the orb lands on a full stop
+      dock() { buzz(6); if (!can(160)) return; note(196, 0.1, 0.22, 1.45); note(392, 0.028, 0.12, 1.2, 'triangle'); },
+      // a tap on the orb: the field rings
+      ring() { buzz(12); if (!can(160)) return; note(1318.5, 0.035, 0.7); note(1975.5, 0.014, 0.45, 1, 'sine', 0.02); }
+    };
+    if (btn) btn.addEventListener('click', () => {
+      on = !on;
+      try { window.localStorage.setItem(KEY, on ? 'on' : 'off'); } catch (err) { /* not kept, that is all */ }
+      paint();
+      if (on) { wake(); last = 0; fx.tick(2); }
+    });
+    paint();
+    return fx;
   }
 
   /* ---------------------------------------------------------------------
@@ -387,7 +472,7 @@
      at the front is the one the hero talks about. This part needs no WebGL:
      the list in the hero's footer picks an industry on its own.
      --------------------------------------------------------------------- */
-  function createHeroCopy() {
+  function createHeroCopy(fx) {
     const box = $('#heroLedes'), word = $('#heroWord'), label = $('#heroLabel');
     const ledes = box ? $$('.hero__lede', box) : [];
     if (ledes.length < 2 || !word || !label) return null;
@@ -407,33 +492,62 @@
     };
     const words = stack(word, 'hero__word', items.map((it) => it.word));
     const labels = stack(label, 'hero__tag', items.map((it) => it.label));
-    let cur = 0, pick = null, moreTl = null;
+    let cur = 0, pick = null, moreTl = null, moreW = null;
     const mark = (list, i) => list.forEach((el, k) => { el.classList.toggle('is-on', k === i); if (k === i) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', 'true'); });
-    if (!reduce) [words, labels, ledes].forEach((list) => gsap.set(list.slice(1), { autoAlpha: 0 }));
+    if (!reduce) [words, labels, ledes].forEach((list) => { gsap.set(list[0], { autoAlpha: 1 }); gsap.set(list.slice(1), { autoAlpha: 0 }); });
+    // which versions are on screen, coming or going. Every change starts from wherever each one is now,
+    // so turning quickly, or back the way you came, never makes anything jump.
+    const seen = [words, labels, ledes].map((list) => list.map((el, k) => k === 0));
+    const swap = (list, vis, i, from, into, out) => {
+      list.forEach((el, k) => {
+        if (k === i) {
+          if (!vis[k]) gsap.set(el, from);
+          vis[k] = true;
+          gsap.to(el, Object.assign({ overwrite: true }, into));
+        } else if (vis[k]) {
+          gsap.to(el, Object.assign({ overwrite: true, onComplete: () => { vis[k] = false; gsap.set(el, { autoAlpha: 0 }); } }, out));
+        }
+      });
+    };
 
     function show(i, dir = 1) {
       i = ((i % n) + n) % n;
       if (i === cur) return;
-      const prev = cur; cur = i;
+      cur = i;
       const it = items[i];
       mark(words, i); mark(labels, i); mark(ledes, i);
       picks.forEach((p) => { const on = p.dataset.sat === it.key; p.classList.toggle('is-on', on); p.setAttribute('aria-pressed', on ? 'true' : 'false'); });
       if (status) status.textContent = `Now showing: ${it.name}`;
+      if (fx) fx.tick(i);
       const swapMore = () => { if (!more) return; more.setAttribute('href', it.href); $('span', more).textContent = it.cta; };
       if (reduce) { swapMore(); return; }
-      gsap.killTweensOf([...words, ...labels, ...ledes]);
-      [words, labels, ledes].forEach((list) => list.forEach((el, k) => { if (k !== prev && k !== i) gsap.set(el, { autoAlpha: 0 }); }));
-      // the headline word rolls through its mask, in the direction the orb was turned
-      gsap.fromTo(words[prev], { yPercent: 0, autoAlpha: 1 }, { yPercent: -112 * dir, duration: 0.75, ease: 'expo.out', onComplete: () => gsap.set(words[prev], { autoAlpha: 0 }) });
-      gsap.fromTo(words[i], { yPercent: 112 * dir, autoAlpha: 1 }, { yPercent: 0, duration: 0.95, ease: 'expo.out' });
-      gsap.fromTo(labels[prev], { y: 0, autoAlpha: 1 }, { y: -8 * dir, autoAlpha: 0, duration: 0.3, ease: 'power2.out' });
-      gsap.fromTo(labels[i], { y: 10 * dir, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, ease: 'power3.out', delay: 0.08 });
-      gsap.fromTo(ledes[prev], { y: 0, autoAlpha: 1 }, { y: -10, autoAlpha: 0, duration: 0.28, ease: 'power2.out' });
-      gsap.fromTo(ledes[i], { y: 16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.75, ease: 'power3.out', delay: 0.14 });
+      // The headline word: the old one fades where it stands, then the new one rises through the line's mask
+      // from below, the way every heading on the page arrives. Nothing is ever cut off against the line above.
+      swap(words, seen[0], i, { yPercent: 108, autoAlpha: 1 },
+        { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: 'expo.out', delay: 0.1 },
+        { yPercent: -12, autoAlpha: 0, duration: 0.18, ease: 'power1.out' });
+      // the label and the paragraph leave first and arrive second, so two versions are never read at once
+      swap(labels, seen[1], i, { y: 8 * dir, autoAlpha: 0 },
+        { y: 0, autoAlpha: 1, duration: 0.5, ease: 'power3.out', delay: 0.16 },
+        { y: -6 * dir, autoAlpha: 0, duration: 0.16, ease: 'power1.out' });
+      swap(ledes, seen[2], i, { y: 12, autoAlpha: 0 },
+        { y: 0, autoAlpha: 1, duration: 0.6, ease: 'power3.out', delay: 0.2 },
+        { y: -6, autoAlpha: 0, duration: 0.18, ease: 'power1.out' });
+      // the second button changes its words while they are out of sight, and its width eases to fit them
       if (more) {
         const txt = $('span', more);
         if (moreTl) moreTl.kill();
-        moreTl = gsap.timeline().to(txt, { autoAlpha: 0, duration: 0.16, ease: 'power1.out' }).call(swapMore).to(txt, { autoAlpha: 1, duration: 0.4, ease: 'power2.out' });
+        if (moreW) moreW.kill();
+        moreTl = gsap.timeline()
+          .to(txt, { autoAlpha: 0, duration: 0.12, ease: 'power1.out' })
+          .call(() => {
+            const w0 = more.getBoundingClientRect().width;
+            swapMore();
+            gsap.set(more, { width: 'auto' });
+            const w1 = more.getBoundingClientRect().width;
+            moreW = gsap.fromTo(more, { width: w0 }, { width: w1, duration: 0.45, ease: 'power3.out', clearProps: 'width' });
+          })
+          .to(txt, { autoAlpha: 1, duration: 0.35, ease: 'power2.out' });
       }
     }
     picks.forEach((p) => p.addEventListener('click', () => {
@@ -1271,10 +1385,12 @@
     const loader = $('#loader'), video = $('#loaderVideo');
     const signal = createSignal();
     const flow = createFlow($('#flowCanvas'), signal.pos);
-    signal.onTap((x, y) => flow.surge(x, y));
-    const hero = createHeroCopy();
+    const fx = createFeedback();
+    signal.onTap((x, y) => { flow.surge(x, y); fx.ring(); });
+    signal.on('dock', () => fx.dock());
+    const hero = createHeroCopy(fx);
     // what js/satellites.js needs to join in
-    window.ntell = { reduce, signal, flow, hero };
+    window.ntell = { reduce, signal, flow, hero, fx, lenis };
 
     // sections are initialised top to bottom so pinned scenes measure correctly
     initAbout();

@@ -221,6 +221,13 @@ em { font-style: italic; }
 .nav__links a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: var(--accent); transform: scaleX(0); transform-origin: right; transition: transform 0.5s var(--ease); }
 .nav__links a:hover { color: var(--ink); }
 .nav__links a:hover::after { transform: scaleX(1); transform-origin: left; }
+.nav__sound { display: grid; place-items: center; width: 40px; height: 40px; margin: 0 -14px 0 -10px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink-2); cursor: pointer; transition: color 0.3s, background 0.3s; }
+.nav__sound:hover { color: var(--ink); background: rgba(23, 9, 12, 0.06); }
+.nav__sound svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.nav__sound .off, .nav__sound.is-off .on { display: none; }
+.nav__sound.is-off .off { display: inline; }
+.nav__sound.is-off { color: var(--faint); }
+html:not(.js) .nav__sound { display: none; }
 .nav__burger { display: none; width: 44px; height: 44px; margin-right: -10px; border: 0; background: none; position: relative; cursor: pointer; }
 .nav__burger span { position: absolute; left: 11px; right: 11px; height: 2px; background: var(--ink); border-radius: 2px; transition: transform 0.5s var(--ease), top 0.5s var(--ease); }
 .nav__burger span:nth-child(1) { top: 17px; }
@@ -242,7 +249,8 @@ em { font-style: italic; }
 
 @media (max-width: 960px) {
   .nav__links, .nav__cta { display: none; }
-  .nav__burger { display: block; margin-left: auto; }
+  .nav__sound { margin: 0 -20px 0 auto; }
+  .nav__burger { display: block; }
   html:not(.js) .nav__cta { display: inline-flex; margin-left: auto; }
 }
 /* without JavaScript the page is static: the nav gets solid ground, and scenes that only draw with script step aside */
@@ -294,9 +302,13 @@ html:not(.js) .hero__lede:not(.is-on) { display: none; }
 .sats { position: fixed; left: 0; top: 0; z-index: 41; pointer-events: none; opacity: 0; will-change: transform, opacity; }
 .sats canvas { width: 100%; height: 100%; }
 .sats--still { position: absolute; left: 50%; top: 50%; z-index: 1; opacity: 1; }
-/* with satellites round it, the orb can be turned from anywhere inside their orbit */
-.sats-on .hero__stage::before { content: ""; position: absolute; inset: -24% -66%; border-radius: 50%; }
-.sat-hit { position: absolute; left: 0; top: 0; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+/* Two places to take hold. The orbit is everything round the orb: a drag there turns and tips the satellites,
+   and takes the whole touch (at the end of its travel it hands the drag on to the page). Over it sits the orb
+   itself, where a drag turns the orb alone and an up-and-down swipe still scrolls the page. */
+.hero__orbit { position: absolute; inset: -26% -68%; border-radius: 50%; touch-action: none; }
+.hero__core { position: absolute; inset: 0; border-radius: 50%; }
+.hero__stage:not(.has-sats) .hero__orbit { display: none; }
+.sat-hit { position: absolute; left: 0; top: 0; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }
 .sat-hit.is-off { pointer-events: none; }
 .sat-hit:focus-visible { border-radius: 50%; }
 .hero__stage.is-away .sat-hit, .hero__stage:not(.has-sats) .sat-hit { visibility: hidden; }
