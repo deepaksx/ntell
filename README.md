@@ -67,14 +67,17 @@ and static. With JavaScript off it is readable from top to bottom with a solid
 nav; the two scenes that only exist as script (the organisation chart and the
 adoption dots) are left out.
 
-- **Opening sting**: the supplied logo animation plays on every load, then the
-  page lifts in. "Skip intro" or Escape ends it early. The video is asked to
-  play at once (a phone does not fetch a video until it is), and the logo's orb
-  waits on screen while it arrives. If the video has not started within about
-  two and a half seconds, or the phone refuses to autoplay it (low power mode
-  does), the wordmark is drawn in round the orb instead. Either way there is an
-  opening, and it ends on the same frame: the drawn wordmark is set exactly
-  where the video's last frame has it.
+- **Opening sting**: the logo animation plays on every load, then the page
+  lifts in. "Skip intro" or Escape ends it early. A screen with a mouse plays
+  the supplied video. A phone or tablet is not sent the video (a phone may be
+  slow to fetch one, may refuse to autoplay it, and does not always play it
+  smoothly): it shows the same sequence drawn in code by `drawSting` in
+  `js/main.js`, from the logo's own shapes. The n rises, the orb lands on its
+  shoulder, the orb drops and the n draws back, and the other letters come up
+  one by one and push the orb along to its place as the full stop. Its
+  positions and timings were measured from the video frame by frame, and it
+  ends on the video's last frame exactly. Any screen whose video has not
+  started within a second and a half shows the drawn one too.
 - **The signal orb**: the logo's orb, drawn as a real sphere on a canvas so its
   six-circle pattern turns in 3D. It sits large in the hero, rolls with the
   scroll, lands on the full stop of each chapter heading, rides a rail at the
@@ -106,9 +109,10 @@ adoption dots) are left out.
   fits on a single line. On load the
   satellites swing out of the orb and come to rest on Enterprise; as the page
   scrolls they draw back into it. Everything heavy (models, shaders, one unseen
-  frame) is prepared while the opening sting still covers the page. The 3D
-  library itself is fetched only once the sting is under way, so it never
-  competes with the video, and not at all when the browser asks to save data.
+  frame) is prepared where it cannot be seen as a stutter: under the opening
+  video while it plays, or, where the opening is drawn in code, once the hero
+  has finished arriving. The 3D library itself is fetched only once the
+  opening is under way, and not at all when the browser asks to save data.
 - **The view**: the orbit runs round the orb at its equator and is seen from
   only just above its own plane, tipped a little towards the viewer. So each
   model is met from the front, and the one at the front, which faces straight

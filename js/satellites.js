@@ -561,10 +561,10 @@ async function initHero(ntell) {
   // Everything heavy is done a piece at a time, a frame apart, while the opening animation still covers
   // the page: the studio, each model, the shaders, and one unseen frame that sends it all to the graphics
   // card. By the time the hero is shown there is nothing left to wait for, so nothing can make it stutter.
-  // If this file arrives late, after the hero has already begun to show, it waits for the hero's own
-  // entrance to finish first rather than interrupt it.
+  // The page says when that can start without being seen as a stutter (ntell.calm, in main.js): at once
+  // under the opening video, otherwise when the hero's own entrance has finished.
   const nextFrame = () => new Promise((done) => requestAnimationFrame(() => done()));
-  if (signal.started && !still) await new Promise((done) => setTimeout(done, 3000));
+  if (!still && ntell.calm) await ntell.calm;
   await nextFrame();
   const canvas = document.createElement('canvas');
   let studio;

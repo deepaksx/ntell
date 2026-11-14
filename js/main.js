@@ -1416,19 +1416,116 @@
   /* ---------------------------------------------------------------------
      Boot: the opening sting plays on every load, then the hero sequence
      --------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------
+     The opening, drawn. The same sequence as the supplied video, made from
+     the logo's own shapes: the n rises, the orb lands on its shoulder and
+     takes its bite out of it, the orb drops and the n draws back, the other
+     letters come up one by one and push the orb along to its place as the
+     full stop. It needs no download and no permission to play, so it is
+     what a phone shows, and what any screen shows if its video cannot
+     start. Positions and timings were measured from the video frame by
+     frame, and it ends on the video's last frame exactly.
+
+     Everything is placed in the video's own frame (1200 by 540). The word
+     has one transform for its size and place; the orb and the letters move
+     inside it, in the wordmark's own units (601 by 149).
+     --------------------------------------------------------------------- */
+  function drawSting(host, done) {
+    const NS = 'http://www.w3.org/2000/svg';
+    const make = (tag, attrs, parent) => {
+      const n = document.createElementNS(NS, tag);
+      Object.keys(attrs || {}).forEach((k) => n.setAttribute(k, attrs[k]));
+      if (parent) parent.appendChild(n);
+      return n;
+    };
+    const glyphs = $$('#wm path'), orbSrc = $('#orb');
+    if (glyphs.length < 2 || !orbSrc) return null;
+    const stage = make('svg', { class: 'loader__stage', viewBox: '0 0 1200 540', 'aria-hidden': 'true' });
+    const word = make('g', {}, stage);
+    const line = make('g', { transform: 'translate(0 146)' }, word);
+    const letters = glyphs.map((g) => make('path', { d: g.getAttribute('d') }, make('g', { transform: g.getAttribute('transform') || '' }, line)));
+    const notch = make('circle', { class: 'loader__notch', cx: 97.96, cy: 54.16, r: 0 }, word);
+    const orb = make('g', {}, word);
+    Array.from(orbSrc.children).forEach((c) => orb.appendChild(c.cloneNode(true)));
+    const pattern = $('g', orb);
+    host.insertBefore(stage, host.firstChild);
+
+    const K = (0.7983 * 1200) / 601;   // frame pixels to one wordmark unit, at rest
+    const RAD = 20.8;                  // the orb's radius as the full stop
+    // the word: its scale, where the n's left edge and the baseline are in the frame, and how far it has yet to rise
+    const P = { s: 2.48, nx: 360, by: 523.8, rise: 400 };
+    // the orb: its centre in the word, its size (1 is the full stop), its squash, its turn, and its bite out of the n
+    const O = { x: 97.96, y: 54.16, k: 0, sx: 1, sy: 1, spin: 0, bite: 0 };
+    const render = () => {
+      const s = K * P.s;
+      word.setAttribute('transform', `translate(${P.nx.toFixed(2)} ${(P.by + P.rise - s * 146).toFixed(2)}) scale(${s.toFixed(4)})`);
+      const u = (O.k * RAD * 2) / 100;
+      const cy = O.y + RAD * O.k * (1 - O.sy);   // squashed, it stays on its base
+      orb.setAttribute('transform', `translate(${O.x.toFixed(2)} ${cy.toFixed(2)}) scale(${(u * O.sx).toFixed(4)} ${(u * O.sy).toFixed(4)}) translate(-50 -50)`);
+      if (pattern) pattern.setAttribute('transform', `rotate(${(O.spin + ((O.x - 97.96) / RAD) * 57.3).toFixed(1)} 50 50)`);
+      notch.setAttribute('r', (26.14 * O.bite).toFixed(2));
+    };
+
+    const rest = letters.slice(1);
+    gsap.set(rest, { autoAlpha: 0 });
+    const tl = gsap.timeline({ onUpdate: render, onComplete: done });
+    // the n rises into the frame
+    tl.to(P, { rise: 0, duration: 0.5, ease: 'power3.out' }, 0)
+      // the orb lands on its shoulder, takes its bite, and turns slowly while it sits there
+      .to(O, { k: 1.083, duration: 0.5, ease: 'back.out(2.3)' }, 0.45)
+      .to(O, { bite: 1, duration: 0.3, ease: 'power2.out' }, 0.45)
+      .to(O, { spin: 150, duration: 2.4, ease: 'none' }, 0.45)
+      // it leaves: across, then down to the baseline, where it gives a little as it lands
+      .to(O, { bite: 0, duration: 0.14, ease: 'power1.in' }, 1.56)
+      .to(O, { x: 120, duration: 0.3, ease: 'power1.out' }, 1.58)
+      .to(O, { y: 125.2, k: 1, duration: 0.29, ease: 'power2.in' }, 1.6)
+      .to(O, { sx: 1.16, sy: 0.74, duration: 0.06, ease: 'power1.out' }, 1.89)
+      .to(O, { sx: 1, sy: 1, duration: 0.22, ease: 'back.out(2.5)' }, 1.95)
+      .to(O, { x: 137, duration: 0.17, ease: 'power1.out', overwrite: 'auto' }, 1.89)
+      // the n draws back to its size and place in the word
+      .to(P, { s: 1.85, nx: 120, by: 488, duration: 0.5, ease: 'power2.inOut' }, 1.62)
+      .to(P, { s: 1, by: 414.4, duration: 0.5, ease: 'power3.out' }, 2.12)
+      .to(P, { nx: 78, duration: 0.14, ease: 'sine.out' }, 2.12)
+      .to(P, { nx: 120, duration: 0.36, ease: 'sine.inOut' }, 2.26);
+    // the other letters come up one by one, and each pushes the orb along until it is the full stop
+    const stops = [219.2, 324, 364.4, 412.1];
+    // (the orb moves on a moment before the letter that pushes it, so the two are never on top of each other)
+    rest.forEach((l, i) => {
+      const at = 2.08 + i * 0.065;
+      if (i < stops.length) tl.to(O, { x: stops[i], duration: i === stops.length - 1 ? 0.3 : 0.11, ease: 'power2.out', overwrite: 'auto' }, at - 0.07);
+      tl.set(l, { autoAlpha: 1 }, at)
+        .fromTo(l, { scaleY: 0.12, transformOrigin: '50% 100%' }, { scaleY: 1, duration: 0.26, ease: 'back.out(1.8)' }, at);
+    });
+    tl.to({}, { duration: 0.32 });
+    render();
+    return tl;
+  }
+
   // The satellites' 3D library is large. It is fetched only once the opening animation is under way, so it
   // cannot hold that up, and not at all for a visitor who has asked their browser to save data.
+  const frugal = () => { const net = navigator.connection; return !!(net && net.saveData); };
   let asked = false;
   function fetchSatellites() {
     if (asked) return;
     asked = true;
-    const net = navigator.connection;
-    if (net && net.saveData) return;
+    if (frugal()) return;
     import('./satellites.js').catch(() => { /* the hero works without its satellites */ });
+  }
+  // While the drawn opening plays, the library is only downloaded, not run: running it there would cost the
+  // animation its smoothness.
+  let warmed = false;
+  function warmSatellites() {
+    if (warmed || asked || frugal()) return;
+    warmed = true;
+    ['js/satellites.js', 'assets/vendor/three.module.min.js', 'assets/vendor/three.core.min.js'].forEach((href) => {
+      const l = document.createElement('link');
+      l.rel = 'modulepreload'; l.href = href;
+      document.head.appendChild(l);
+    });
   }
 
   function boot() {
-    const loader = $('#loader'), video = $('#loaderVideo'), mark = $('#loaderMark');
+    const loader = $('#loader'), video = $('#loaderVideo');
     const signal = createSignal();
     const flow = createFlow($('#flowCanvas'), signal.pos);
     const fx = createFeedback();
@@ -1437,6 +1534,10 @@
     const hero = createHeroCopy(fx);
     // what js/satellites.js needs to join in
     window.ntell = { reduce, signal, flow, hero, fx, lenis };
+    // The satellites do their heavy setting-up when it cannot be seen as a stutter: under the video while it
+    // plays, or once the hero has finished arriving. This promise says when.
+    let calm = () => {};
+    window.ntell.calm = new Promise((ok) => { calm = ok; });
 
     // sections are initialised top to bottom so pinned scenes measure correctly
     initAbout();
@@ -1455,7 +1556,7 @@
     initFooter();
     initNav(signal);
 
-    if (reduce) { if (loader) loader.remove(); fetchSatellites(); return; }
+    if (reduce) { if (loader) loader.remove(); calm(); fetchSatellites(); return; }
 
     const intro = gsap.timeline({ paused: true, defaults: { ease: 'expo.out' } });
     intro
@@ -1476,6 +1577,7 @@
     const lift = (quick) => {
       if (lifted) return; lifted = true;
       fetchSatellites();
+      setTimeout(calm, quick ? 2400 : 2900);
       if (lenis) lenis.start();
       const out = gsap.timeline({ onComplete: () => loader.remove() });
       if (quick) out.to(loader, { autoAlpha: 0, duration: 0.35, ease: 'power1.out' });
@@ -1486,55 +1588,60 @@
 
     gsap.set(loader, { clipPath: 'inset(0 0 0% 0)' });
     // the animation plays on every load; the button and Escape are there for anyone in a hurry
-    const skipNow = () => { if (lifted) return; video.pause(); lift(true); };
+    let sting = null;
+    const skipNow = () => { if (lifted) return; video.pause(); if (sting) sting.kill(); lift(true); };
     const skipBtn = $('#loaderSkip');
     if (skipBtn) skipBtn.addEventListener('click', skipNow);
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape') skipNow(); });
 
-    // Play the supplied sting from the first frame of the mark to the full wordmark.
-    // The video is asked to play at once: a phone does not fetch a video until it is. While it is on its way
-    // the logo's orb waits on screen. If the video starts in time, it takes over. If it does not (a slow
-    // connection, or a phone that refuses to autoplay, as low power mode does), the wordmark is drawn in
-    // round the orb instead. Either way there is an opening, and it ends on the same frame.
+    // The opening. A screen with a mouse plays the supplied video, from the first frame of the mark to the
+    // full wordmark. A phone or tablet shows the same sequence drawn in code (drawSting): it is not sent the
+    // video, because a phone may be slow to fetch one, may refuse to autoplay it, and does not always play it
+    // smoothly. Any screen whose video has not started in time gets the drawn one too.
     const END = 3.45;
+    const touch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     let started = false, drawn = false;
     const watch = () => { if (lifted) return; if (video.currentTime >= END || video.ended) { video.pause(); lift(false); } else requestAnimationFrame(watch); };
     const takeOver = () => {
       if (started || drawn || lifted) return;
       started = true;
+      calm();
       fetchSatellites();
-      if (mark) gsap.to(mark, { autoAlpha: 0, duration: 0.18, ease: 'power1.out' });
       video.playbackRate = 1.12;
       requestAnimationFrame(watch);
     };
     const drawInstead = () => {
       if (started || drawn || lifted) return;
       drawn = true;
-      loader.classList.add('is-drawn');
-      fetchSatellites();
+      // the video is taken out altogether, so nothing of it is fetched or shown from here on
       video.pause();
-      gsap.set(video, { autoAlpha: 0 });
-      if (!mark) { lift(true); return; }
-      gsap.timeline({ onComplete: () => lift(false) })
-        .fromTo('.loader__letters', { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 1, ease: 'expo.out' })
-        .to({}, { duration: 0.75 });
+      $$('source', video).forEach((src) => src.remove());
+      video.removeAttribute('src');
+      try { video.load(); } catch (err) { /* nothing was loading */ }
+      video.style.display = 'none';
+      warmSatellites();
+      sting = drawSting(loader, () => lift(false));
+      if (!sting) lift(true);
     };
-    video.addEventListener('error', drawInstead);
-    // (when every source has failed, the video is left with none: that is only known a moment after the last error)
-    $$('source', video).forEach((src) => src.addEventListener('error', () => setTimeout(() => { if (video.networkState === 3) drawInstead(); }, 80)));
-    if (video.readyState < 1) video.addEventListener('loadedmetadata', () => { if (video.currentTime < 0.25) { try { video.currentTime = 0.3; } catch (e) { /* it starts from the top */ } } }, { once: true });
-    const asking = video.play();
-    if (asking && asking.catch) asking.catch((err) => { if (!err || err.name !== 'AbortError') drawInstead(); });
-    // The video takes over when its clock is moving and it is past its blank opening frames. The clock is
-    // watched, not an event, because the video may have begun on its own before this script was listening.
-    const from = Math.max(video.currentTime, 0.28);
-    const moving = () => {
-      if (started || drawn || lifted) return;
-      if (!video.paused && video.currentTime > from + 0.04) takeOver(); else requestAnimationFrame(moving);
-    };
-    requestAnimationFrame(moving);
-    // never hold the page hostage to the video
-    setTimeout(drawInstead, 2400);
+    if (touch) drawInstead();
+    else {
+      video.addEventListener('error', drawInstead);
+      // (when every source has failed, the video is left with none: that is only known a moment after the last error)
+      $$('source', video).forEach((src) => src.addEventListener('error', () => setTimeout(() => { if (video.networkState === 3) drawInstead(); }, 80)));
+      if (video.readyState < 1) video.addEventListener('loadedmetadata', () => { if (video.currentTime < 0.25) { try { video.currentTime = 0.3; } catch (e) { /* it starts from the top */ } } }, { once: true });
+      const asking = video.play();
+      if (asking && asking.catch) asking.catch((err) => { if (!err || err.name !== 'AbortError') drawInstead(); });
+      // The video takes over when its clock is moving. The clock is watched, not an event, because the video
+      // may have begun on its own before this script was listening.
+      const from = video.currentTime;
+      const moving = () => {
+        if (started || drawn || lifted) return;
+        if (!video.paused && video.currentTime > from + 0.03) takeOver(); else requestAnimationFrame(moving);
+      };
+      requestAnimationFrame(moving);
+      // never hold the page hostage to the video
+      setTimeout(drawInstead, 1600);
+    }
     setTimeout(() => lift(false), 7000);
   }
 
