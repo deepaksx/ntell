@@ -598,7 +598,7 @@
     const ptr = { x: 0, y: 0, sx: 0, sy: 0, k: 0, target: 0, press: 0, pressT: 0, pv: 0 };
     let W = 1, H = 1, dpr = 1, compact = false, time = 0, last = 0, cleared = false;
     let inb = [], outb = [], byp = [];
-    let surge = 0, kick = 0, kickV = 0, tilt = 0, tiltV = 0, scrollV = 0, lastSy = window.scrollY, dash = 0;
+    let kick = 0, kickV = 0, tilt = 0, tiltV = 0, scrollV = 0, lastSy = window.scrollY;
     // the field as it stands on this frame
     let ox = 0, oy = 0, R = 1, kR2 = 0, ca = 1, sa = 0, h = 8, wAmp = 0, gcx = 0, reach2 = 1;
     let pA2 = 0, pS2 = 1, pTx = 1, pTy = 0, pV = 0;
@@ -616,7 +616,6 @@
       inb = Array.from({ length: nIn }, (_, i) => ({
         s: lerp(-0.965, 0.965, i / (nIn - 1)),
         hot: i % 6 === 2, alpha: 0.5 + rnd() * 0.5, lw: 0.8 + rnd() * 0.55,
-        pulses: [i % 2 ? rnd() : -1, rnd() > 0.72 ? rnd() : -1], speed: 0.05 + rnd() * 0.06,
         buf: buf(), n: 0
       }));
       // lines that leave it: fewer, and in step
@@ -800,43 +799,21 @@
         for (let k = 1; k < l.nb; k++) ctx.lineTo(l.b[k * 2], l.b[k * 2 + 1]);
         ctx.stroke();
       }
-      const speedUp = 1 + surge * 3.2;
-      const span = (R * 1.7) / h;
+      // The lines only. (Dots once ran along them, in towards the orb and out again; they drew the eye away
+      // from the page, so the field is now lines alone. How the lines move is unchanged.)
       for (let i = 0; i < inb.length; i++) {
         const l = inb[i];
         ctx.strokeStyle = l.hot ? gHot : gInk; ctx.globalAlpha = l.hot ? 1 : l.alpha; ctx.lineWidth = (l.hot ? l.lw + 0.35 : l.lw) * thin;
         ctx.beginPath(); path(l.buf, l.n); ctx.stroke();
-        if (I < 0.9 || !live) continue;
-        // signals running down the line towards the orb, quickening as they near it
-        ctx.globalAlpha = 1;
-        for (let j = 0; j < l.pulses.length; j++) {
-          let u = l.pulses[j];
-          if (u < 0) continue;
-          u += dt * l.speed * (0.45 + 1.7 * u) * speedUp;
-          if (u >= 1) u = 0;
-          l.pulses[j] = u;
-          const at = (1 - u) * span, k = Math.floor(at);
-          if (k >= l.n - 1) continue;
-          const vis = smooth((u - 0.04) / 0.5);
-          if (vis <= 0) continue;
-          const f = at - k;
-          const x = lerp(l.buf[k * 2], l.buf[k * 2 + 2], f), y = lerp(l.buf[k * 2 + 1], l.buf[k * 2 + 3], f);
-          ctx.fillStyle = `rgba(215,20,60,${vis * 0.9 * fade * fade})`;
-          ctx.beginPath(); ctx.arc(x, y, (l.hot ? 2.6 : 1.9) * (0.55 + 0.45 * thin) * (1 + surge * 0.6), 0, Math.PI * 2); ctx.fill();
-        }
       }
-      // what leaves: a few clear lines, pulsing in step
+      // what leaves: a few clear lines
       const bp = easeOut(clamp((I - 0.5) / 0.5));
       if (bp > 0.003) {
-        ctx.strokeStyle = gOut; ctx.globalAlpha = 1;
+        ctx.strokeStyle = gOut; ctx.globalAlpha = 1; ctx.lineWidth = 1.15 * thin;
         for (let i = 0; i < outb.length; i++) {
           const l = outb[i], n = Math.max(2, Math.round(l.n * bp));
-          ctx.lineWidth = 1.15 * thin; ctx.setLineDash([]);
-          ctx.beginPath(); path(l.buf, n); ctx.stroke();
-          ctx.lineWidth = (3.2 + surge * 1.6) * thin; ctx.setLineDash([0.1, 22]); ctx.lineDashOffset = -(dash % 22.1);
           ctx.beginPath(); path(l.buf, n); ctx.stroke();
         }
-        ctx.setLineDash([]);
       }
       ctx.globalAlpha = 1;
     }
@@ -852,8 +829,6 @@
       // pressing widens the pole on a soft spring; a tap on the orb makes the whole field ring
       ptr.pv += ((ptr.pressT - ptr.press) * 120 - ptr.pv * 13) * dt; ptr.press += ptr.pv * dt;
       kickV += (-kick * 60 - kickV * 7) * dt; kick += kickV * dt;
-      surge = Math.max(0, surge - dt * 0.85);
-      dash += dt * 44 * (1 + surge * 2.4);
       // the field leans against the scroll, then swings back and settles like a compass needle
       const sy = window.scrollY;
       scrollV += ((sy - lastSy) / dt - scrollV) * (1 - Math.exp(-dt * 9));
@@ -881,8 +856,8 @@
     window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { build(); if (reduce) draw(0); }, 120); });
     return {
       state: S,
-      // a tap on the orb: the field rings, and the lines leaving it quicken
-      surge() { surge = 1; kickV += 8; }
+      // a tap on the orb, or a satellite coming to the front: the field rings
+      surge() { kickV += 8; }
     };
   }
 
