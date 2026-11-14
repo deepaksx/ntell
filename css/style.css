@@ -179,7 +179,15 @@ em { font-style: italic; }
   position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
   background: var(--paper); animation: loader-failsafe 0.01s linear 9s forwards;
 }
+.loader__video, .loader__mark { grid-area: 1 / 1; }
 .loader__video { width: min(640px, 88vw); height: auto; aspect-ratio: 1200 / 540; mix-blend-mode: multiply; }
+/* the wordmark, set exactly where the video's last frame has it: 80% of the frame's width, a little below its middle */
+.loader__mark { width: calc(min(640px, 88vw) * 0.8); height: auto; fill: var(--ink); overflow: visible; translate: 0 calc(min(640px, 88vw) * 0.0258); }
+.loader__letters { opacity: 0; }
+/* while the video is on its way the orb breathes, about its own centre (given in the drawing's own units) */
+.loader__orb { transform-origin: 412.1px 125.2px; animation: orb-wait 1.5s ease-in-out infinite; }
+.loader.is-drawn .loader__orb { animation: none; }
+@keyframes orb-wait { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 @keyframes loader-failsafe { to { opacity: 0; visibility: hidden; pointer-events: none; } }
 .loader__skip {
   position: absolute; left: 50%; bottom: max(26px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);

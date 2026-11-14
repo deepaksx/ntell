@@ -25,10 +25,6 @@
 <link rel="stylesheet" href="css/fonts.css">
 <!-- fonts:end -->
 <link rel="stylesheet" href="css/style.css">
-<!-- the satellites' 3D library is fetched alongside the page, so it is ready before the opening animation ends -->
-<link rel="modulepreload" href="js/satellites.js">
-<link rel="modulepreload" href="assets/vendor/three.module.min.js">
-<link rel="modulepreload" href="assets/vendor/three.core.min.js">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -79,11 +75,15 @@
   </defs>
 </svg>
 
-<!-- Opening sting: the supplied ntell.ai signal-orb animation. Plays on every load. -->
+<!-- Opening sting: the supplied ntell.ai signal-orb animation. Plays on every load.
+     The logo's orb is on screen from the first moment, in the place it holds in the video's last frame.
+     If the video cannot start in time (a slow connection, or a phone that will not autoplay), the wordmark
+     is drawn in round the orb instead, so there is always an opening and it always ends the same way. -->
 <div class="loader" id="loader">
-  <video class="loader__video" id="loaderVideo" muted playsinline preload="auto" aria-hidden="true">
-    <source src="assets/video/ntell-sting.mp4" type="video/mp4">
-    <source src="assets/video/ntell-sting.webm" type="video/webm">
+  <svg class="loader__mark" id="loaderMark" viewBox="0 0 601 149" aria-hidden="true"><g class="loader__letters"><use href="#wm"/></g><use class="loader__orb" href="#orb" x="391.3" y="104.4" width="41.6" height="41.6"/></svg>
+  <video class="loader__video" id="loaderVideo" muted playsinline autoplay preload="auto" aria-hidden="true">
+    <source src="assets/video/ntell-sting.mp4#t=0.3" type="video/mp4">
+    <source src="assets/video/ntell-sting.webm#t=0.3" type="video/webm">
   </video>
   <button class="loader__skip cap" id="loaderSkip" type="button">Skip intro</button>
 </div>
@@ -854,6 +854,5 @@
 <script src="assets/vendor/SplitText.min.js"></script>
 <script src="assets/vendor/lenis.min.js"></script>
 <script src="js/main.js"></script>
-<script type="module" src="js/satellites.js"></script>
 </body>
 </html>

@@ -1416,8 +1416,19 @@
   /* ---------------------------------------------------------------------
      Boot: the opening sting plays on every load, then the hero sequence
      --------------------------------------------------------------------- */
+  // The satellites' 3D library is large. It is fetched only once the opening animation is under way, so it
+  // cannot hold that up, and not at all for a visitor who has asked their browser to save data.
+  let asked = false;
+  function fetchSatellites() {
+    if (asked) return;
+    asked = true;
+    const net = navigator.connection;
+    if (net && net.saveData) return;
+    import('./satellites.js').catch(() => { /* the hero works without its satellites */ });
+  }
+
   function boot() {
-    const loader = $('#loader'), video = $('#loaderVideo');
+    const loader = $('#loader'), video = $('#loaderVideo'), mark = $('#loaderMark');
     const signal = createSignal();
     const flow = createFlow($('#flowCanvas'), signal.pos);
     const fx = createFeedback();
@@ -1444,7 +1455,7 @@
     initFooter();
     initNav(signal);
 
-    if (reduce) { if (loader) loader.remove(); return; }
+    if (reduce) { if (loader) loader.remove(); fetchSatellites(); return; }
 
     const intro = gsap.timeline({ paused: true, defaults: { ease: 'expo.out' } });
     intro
@@ -1464,6 +1475,7 @@
     let lifted = false;
     const lift = (quick) => {
       if (lifted) return; lifted = true;
+      fetchSatellites();
       if (lenis) lenis.start();
       const out = gsap.timeline({ onComplete: () => loader.remove() });
       if (quick) out.to(loader, { autoAlpha: 0, duration: 0.35, ease: 'power1.out' });
@@ -1479,23 +1491,51 @@
     if (skipBtn) skipBtn.addEventListener('click', skipNow);
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape') skipNow(); });
 
-    // play the supplied sting from the first frame of the mark to the full wordmark
+    // Play the supplied sting from the first frame of the mark to the full wordmark.
+    // The video is asked to play at once: a phone does not fetch a video until it is. While it is on its way
+    // the logo's orb waits on screen. If the video starts in time, it takes over. If it does not (a slow
+    // connection, or a phone that refuses to autoplay, as low power mode does), the wordmark is drawn in
+    // round the orb instead. Either way there is an opening, and it ends on the same frame.
     const END = 3.45;
-    let started = false;
+    let started = false, drawn = false;
     const watch = () => { if (lifted) return; if (video.currentTime >= END || video.ended) { video.pause(); lift(false); } else requestAnimationFrame(watch); };
-    const begin = () => {
-      if (started || lifted) return; started = true;
-      try { video.currentTime = 0.3; } catch (e) { /* not seekable yet */ }
+    const takeOver = () => {
+      if (started || drawn || lifted) return;
+      started = true;
+      fetchSatellites();
+      if (mark) gsap.to(mark, { autoAlpha: 0, duration: 0.18, ease: 'power1.out' });
       video.playbackRate = 1.12;
-      const p = video.play();
-      if (p && p.catch) p.catch(() => lift(true));
       requestAnimationFrame(watch);
     };
-    if (video.readyState >= 2) begin(); else video.addEventListener('loadeddata', begin, { once: true });
-    video.addEventListener('error', () => lift(true), { once: true });
-    // never hold the page hostage to the sting: slow networks and blocked autoplay skip it
-    setTimeout(() => { if (!started) lift(true); }, 2600);
-    setTimeout(() => lift(false), 6200);
+    const drawInstead = () => {
+      if (started || drawn || lifted) return;
+      drawn = true;
+      loader.classList.add('is-drawn');
+      fetchSatellites();
+      video.pause();
+      gsap.set(video, { autoAlpha: 0 });
+      if (!mark) { lift(true); return; }
+      gsap.timeline({ onComplete: () => lift(false) })
+        .fromTo('.loader__letters', { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 1, ease: 'expo.out' })
+        .to({}, { duration: 0.75 });
+    };
+    video.addEventListener('error', drawInstead);
+    // (when every source has failed, the video is left with none: that is only known a moment after the last error)
+    $$('source', video).forEach((src) => src.addEventListener('error', () => setTimeout(() => { if (video.networkState === 3) drawInstead(); }, 80)));
+    if (video.readyState < 1) video.addEventListener('loadedmetadata', () => { if (video.currentTime < 0.25) { try { video.currentTime = 0.3; } catch (e) { /* it starts from the top */ } } }, { once: true });
+    const asking = video.play();
+    if (asking && asking.catch) asking.catch((err) => { if (!err || err.name !== 'AbortError') drawInstead(); });
+    // The video takes over when its clock is moving and it is past its blank opening frames. The clock is
+    // watched, not an event, because the video may have begun on its own before this script was listening.
+    const from = Math.max(video.currentTime, 0.28);
+    const moving = () => {
+      if (started || drawn || lifted) return;
+      if (!video.paused && video.currentTime > from + 0.04) takeOver(); else requestAnimationFrame(moving);
+    };
+    requestAnimationFrame(moving);
+    // never hold the page hostage to the video
+    setTimeout(drawInstead, 2400);
+    setTimeout(() => lift(false), 7000);
   }
 
   boot();
