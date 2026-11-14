@@ -528,7 +528,7 @@ export function createStudio(canvas, opts = {}) {
 const N = ORDER.length, STEP = TAU / N;
 const CAM_D = 11;                 // camera distance, in orb radii
 const CAM_EL = (10 * Math.PI) / 180;  // how far above the orbit's plane the camera sits: only just, for a front view
-const PLANE_Y = -0.42;            // the orbit runs below the orb's middle, so the model at the front stands on its lower half
+const PLANE_Y = -0.04;            // the orbit runs round the orb at its equator
 const ECC = 0.35;                 // the orbit swings a little wider behind the orb
 const ORB_VIS = 0.9925;           // the drawn orb's radius as a share of its element's half-size
 const POSE = { enterprise: 2.2, finance: 1.4, government: 1.1, consumer: 2.3 };  // each loop's best moment, for the still version

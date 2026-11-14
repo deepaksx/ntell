@@ -101,10 +101,10 @@ adoption dots) are left out.
   satellites swing out of the orb and come to rest on Enterprise; as the page
   scrolls they draw back into it. Everything heavy (models, shaders, one unseen
   frame) is prepared while the opening sting still covers the page.
-- **The view**: the orbit is seen from only just above its own plane, so each
-  model is met from the front, and the one at the front faces straight out of
-  the page. The orbit runs below the orb's middle, so that model stands on the
-  orb's lower half.
+- **The view**: the orbit runs round the orb at its equator and is seen from
+  only just above its own plane, tipped a little towards the viewer. So each
+  model is met from the front, and the one at the front, which faces straight
+  out of the page, sits just below the middle of the orb.
 - **Three things to turn**: a drag that starts on the orb turns the orb alone.
   A drag that starts in the orbit round it, on a satellite at the side or in
   the space between them, turns the orbit: sideways brings the next satellite
