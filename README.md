@@ -51,7 +51,7 @@ assets/vendor/          GSAP 3.13 (core, ScrollTrigger, SplitText), Lenis 1.3 an
 6. How we work: bespoke deployment, strategic partnership, change management
 7. How we engage: five stages
 8. How we deliver, and where we operate
-9. Team (placeholders) and contact
+9. Who builds it, and contact
 
 ## Design language
 
@@ -149,9 +149,10 @@ adoption dots) are left out.
   the second button. The matching entries in the hero's footer list are the
   `hero__pick` buttons. The models themselves live in `js/satellites.js`, one
   function each.
-- **Team**: replace the `[ Name ]` / `[ Role ]` placeholders in the
-  `<ul class="team__grid">` block. Add a photo by putting an `<img>` inside
-  `.member__pic`.
+- **Team**: the grid of team members is out of the page for now (it only held
+  placeholders). Its styles are still in `css/style.css` (`.team__grid`,
+  `.member`), and the markup is in the git history, for when there are names
+  to show.
 - **Contact**: the phone and office-address placeholders are marked with the
   `ph` class in the contact section and in the footer.
 - **Industries**: each chapter is an `<article class="chapter">`; a capability
