@@ -260,8 +260,15 @@ main, .foot { position: relative; z-index: 1; }
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); grid-template-rows: 1fr auto;
   column-gap: clamp(20px, 4vw, 64px); align-items: center;
 }
-.hero__text { grid-column: 1; grid-row: 1; padding-block: 24px; }
+.hero__text { position: relative; z-index: 2; grid-column: 1; grid-row: 1; padding-block: 24px; }
 .hero__label { margin-bottom: 1.6em; }
+/* the words that change with the satellite at the front: every version sits in one grid cell, so nothing below it moves */
+.hero__tags, .hero__words, .hero__ledes { display: grid; }
+.hero__tag, .hero__word, .hero__lede { grid-area: 1 / 1; }
+.hero__tag:not(.is-on), .hero__word:not(.is-on), .hero__ledes .hero__lede:not(.is-on) { visibility: hidden; }
+.hero__word { white-space: nowrap; will-change: transform; }
+html:not(.js) .hero__lede:not(.is-on) { display: none; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .hero__title {
   font-family: var(--f-serif); font-weight: 400; font-size: var(--fs-hero);
   line-height: 1.0; letter-spacing: -0.03em; margin-bottom: 0.42em;
@@ -272,7 +279,7 @@ main, .foot { position: relative; z-index: 1; }
 .hero__cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: clamp(22px, 3.6vh, 36px); }
 /* the stage is the orb's home, and the surface you drag to turn it */
 .hero__stage {
-  position: relative; grid-column: 2; grid-row: 1; justify-self: center; width: min(30vw, 46vh, 400px); aspect-ratio: 1; border-radius: 50%;
+  position: relative; grid-column: 2; grid-row: 1; justify-self: center; width: min(25vw, 42vh, 384px); aspect-ratio: 1; border-radius: 50%;
   cursor: grab; touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
 }
 .hero__stage.is-dragging { cursor: grabbing; }
@@ -281,11 +288,33 @@ main, .foot { position: relative; z-index: 1; }
 .signal-on .hero__stage svg { visibility: hidden; }
 .hero__hint { position: absolute; left: 50%; top: calc(100% + 62px); transform: translateX(-50%); white-space: nowrap; color: var(--mute); font-size: 0.62rem; opacity: 0; transition: opacity 0.6s; pointer-events: none; }
 .signal-on .hero__hint.is-on { opacity: 1; }
+.sats-on .hero__hint { top: calc(100% + 84px); }
+
+/* the orb's satellites: a WebGL layer drawn over the orb, with a hit area in the stage for each one */
+.sats { position: fixed; left: 0; top: 0; z-index: 41; pointer-events: none; opacity: 0; will-change: transform, opacity; }
+.sats canvas { width: 100%; height: 100%; }
+.sats--still { position: absolute; left: 50%; top: 50%; z-index: 1; opacity: 1; }
+/* with satellites round it, the orb can be turned from anywhere inside their orbit */
+.sats-on .hero__stage::before { content: ""; position: absolute; inset: -24% -66%; border-radius: 50%; }
+.sat-hit { position: absolute; left: 0; top: 0; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+.sat-hit.is-off { pointer-events: none; }
+.sat-hit:focus-visible { border-radius: 50%; }
+.hero__stage.is-away .sat-hit, .hero__stage:not(.has-sats) .sat-hit { visibility: hidden; }
+.hero__stage.is-dragging .sat-hit { cursor: grabbing; }
+.sat-tip {
+  position: absolute; left: 0; top: 0; padding: 5px 9px; border-radius: 99px; background: var(--ink); color: #fff; white-space: nowrap;
+  font-size: 0.6rem; letter-spacing: 0.12em; opacity: 0; transition: opacity 0.25s; pointer-events: none;
+}
+.sat-tip.is-on { opacity: 1; }
 .hero__meta {
   grid-column: 1 / -1; grid-row: 2; display: flex; flex-wrap: wrap; gap: 8px 28px; padding-block: 14px clamp(16px, 2.6vh, 28px);
   border-top: 1px solid var(--line-2); color: var(--mute);
 }
-.hero__meta span:not(.hero__scroll)::before { content: "/ "; color: var(--faint); }
+.hero__pick { padding: 4px 0; border: 0; background: none; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; cursor: pointer; transition: color 0.3s; }
+.hero__pick::before { content: ""; display: inline-block; width: 0.62em; height: 0.62em; margin-right: 0.7em; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--faint); transition: background 0.3s, box-shadow 0.3s, transform 0.5s var(--ease); }
+.hero__pick:hover, .hero__pick.is-on { color: var(--ink); }
+.hero__pick.is-on::before { background: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); transform: scale(1.25); }
+html:not(.js) .hero__pick { cursor: default; }
 .hero__scroll { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; }
 .hero__scroll i { display: block; width: 34px; height: 1px; background: var(--line-2); position: relative; overflow: hidden; }
 .hero__scroll i::after { content: ""; position: absolute; inset: 0; background: var(--ink); transform: translateX(-100%); animation: scroll-hint 2.4s var(--ease-io) infinite; }
@@ -294,12 +323,12 @@ main, .foot { position: relative; z-index: 1; }
 @media (max-width: 860px) {
   .hero { min-height: max(100svh, 640px); }
   .hero__inner { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto auto; row-gap: 4px; }
-  .hero__stage { grid-column: 1; grid-row: 1; width: min(46vw, 30vh, 220px); align-self: center; }
+  .hero__stage { grid-column: 1; grid-row: 1; width: min(44vw, 28vh, 300px); align-self: center; margin-bottom: 30px; }
   .hero__hint { display: none; }
   .hero__text { grid-column: 1; grid-row: 2; padding-block: 8px 20px; }
   .hero__title { font-size: clamp(2.5rem, 11.4vw, 4rem); }
   .hero__meta { grid-row: 3; }
-  .hero__meta span:not(.hero__scroll) { display: none; }
+  .hero__pick { display: none; }
   .hero__scroll { margin-left: 0; }
 }
 

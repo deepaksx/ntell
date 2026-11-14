@@ -220,6 +220,9 @@
     const pos = { x: 0, y: 0, r: 0, live: false, home: 1 };
     const drag = { on: false, x: 0, y: 0, vx: 0, vy: 0, moved: 0, used: false };
     let onTap = null;
+    // the satellites (js/satellites.js) listen in on the orb: when it starts, and how it is being dragged
+    const subs = {};
+    const emit = (name, a, b) => { let res; (subs[name] || []).forEach((fn) => { const r = fn(a, b); if (r) res = r; }); return res; };
     // where a sticky heading rests, read once per layout
     const sticks = new Map();
     window.addEventListener('resize', () => sticks.clear());
@@ -235,6 +238,7 @@
         drag.on = true; drag.x = e.clientX; drag.y = e.clientY; drag.vx = 0; drag.vy = 0; drag.moved = 0;
         try { stage.setPointerCapture(e.pointerId); } catch (err) { /* capture is a nicety */ }
         stage.classList.add('is-dragging');
+        emit('dragstart');
         e.preventDefault();
       });
       stage.addEventListener('pointermove', (e) => {
@@ -243,13 +247,18 @@
         drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.hypot(dx, dy);
         drag.vx = dx; drag.vy = dy;
         orb.roll(dx, dy, Math.max(pos.r * 0.6, 40));
+        emit('drag', dx, dy);
         if (!drag.used && drag.moved > 14) { drag.used = true; if (hint) hint.classList.remove('is-on'); }
       });
       const end = (e) => {
         if (!drag.on) return;
         drag.on = false; stage.classList.remove('is-dragging');
         // a cancelled touch means the page took the gesture to scroll: that is not a tap
-        if (e.type === 'pointerup' && drag.moved < 6 && onTap) { drag.vx = 0; drag.vy = 0; onTap(pos.x, pos.y); orb.spin([0.2, 1, 0.1], 0.5); }
+        // and a tap that lands on a satellite belongs to the satellite, not to the orb
+        const tap = e.type === 'pointerup' && drag.moved < 6;
+        emit('release');
+        if (tap) { drag.vx = 0; drag.vy = 0; }
+        if (tap && !emit('tap', e.clientX, e.clientY) && onTap) { onTap(pos.x, pos.y); orb.spin([0.2, 1, 0.1], 0.5); }
       };
       stage.addEventListener('pointerup', end);
       stage.addEventListener('pointercancel', end);
@@ -352,7 +361,8 @@
       start() {
         if (reduce || !$('[data-orb]')) return;
         html.classList.add('signal-on');
-        st.on = true; st.pop = 0;
+        st.on = true; st.pop = 0; st.started = true;
+        emit('start');
         gsap.ticker.add(frame);
         gsap.set(el, { opacity: 1 });
         gsap.to(st, { pop: 1, duration: 1.5, ease: 'elastic.out(1, 0.72)' });
@@ -361,8 +371,81 @@
         gsap.delayedCall(3.2, () => { st.hintReady = true; });
       },
       onTap(fn) { onTap = fn; },
+      on(name, fn) { (subs[name] = subs[name] || []).push(fn); },
+      spin(ax, ang) { orb.spin(ax, ang); },
+      state: st,
+      get started() { return st.started === true; },
       setSection(name) { st.section = name; },
       hide(flag) { gsap.to(el, { autoAlpha: flag ? 0 : 1, duration: 0.25, overwrite: true }); }
+    };
+  }
+
+  /* ---------------------------------------------------------------------
+     The hero's words follow the orb's satellites. Each industry has one
+     paragraph in #heroLedes; its data attributes carry the word that ends the
+     headline, the label above it and the link below. Whichever satellite is
+     at the front is the one the hero talks about. This part needs no WebGL:
+     the list in the hero's footer picks an industry on its own.
+     --------------------------------------------------------------------- */
+  function createHeroCopy() {
+    const box = $('#heroLedes'), word = $('#heroWord'), label = $('#heroLabel');
+    const ledes = box ? $$('.hero__lede', box) : [];
+    if (ledes.length < 2 || !word || !label) return null;
+    const items = ledes.map((el) => ({ el, key: el.dataset.sat, name: el.dataset.name, word: el.dataset.word, label: el.dataset.label, cta: el.dataset.cta, href: el.dataset.href }));
+    const n = items.length;
+    const more = $('#heroMore'), status = $('#heroStatus'), picks = $$('.hero__pick');
+    const stack = (host, cls, texts) => {
+      host.textContent = '';
+      host.classList.add(`${cls}s`);
+      return texts.map((t, i) => {
+        const s = document.createElement('span');
+        s.className = cls + (i ? '' : ' is-on'); s.textContent = t;
+        if (i) s.setAttribute('aria-hidden', 'true');
+        host.appendChild(s);
+        return s;
+      });
+    };
+    const words = stack(word, 'hero__word', items.map((it) => it.word));
+    const labels = stack(label, 'hero__tag', items.map((it) => it.label));
+    let cur = 0, pick = null, moreTl = null;
+    const mark = (list, i) => list.forEach((el, k) => { el.classList.toggle('is-on', k === i); if (k === i) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', 'true'); });
+    if (!reduce) [words, labels, ledes].forEach((list) => gsap.set(list.slice(1), { autoAlpha: 0 }));
+
+    function show(i, dir = 1) {
+      i = ((i % n) + n) % n;
+      if (i === cur) return;
+      const prev = cur; cur = i;
+      const it = items[i];
+      mark(words, i); mark(labels, i); mark(ledes, i);
+      picks.forEach((p) => { const on = p.dataset.sat === it.key; p.classList.toggle('is-on', on); p.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+      if (status) status.textContent = `Now showing: ${it.name}`;
+      const swapMore = () => { if (!more) return; more.setAttribute('href', it.href); $('span', more).textContent = it.cta; };
+      if (reduce) { swapMore(); return; }
+      gsap.killTweensOf([...words, ...labels, ...ledes]);
+      [words, labels, ledes].forEach((list) => list.forEach((el, k) => { if (k !== prev && k !== i) gsap.set(el, { autoAlpha: 0 }); }));
+      // the headline word rolls through its mask, in the direction the orb was turned
+      gsap.fromTo(words[prev], { yPercent: 0, autoAlpha: 1 }, { yPercent: -112 * dir, duration: 0.75, ease: 'expo.out', onComplete: () => gsap.set(words[prev], { autoAlpha: 0 }) });
+      gsap.fromTo(words[i], { yPercent: 112 * dir, autoAlpha: 1 }, { yPercent: 0, duration: 0.95, ease: 'expo.out' });
+      gsap.fromTo(labels[prev], { y: 0, autoAlpha: 1 }, { y: -8 * dir, autoAlpha: 0, duration: 0.3, ease: 'power2.out' });
+      gsap.fromTo(labels[i], { y: 10 * dir, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, ease: 'power3.out', delay: 0.08 });
+      gsap.fromTo(ledes[prev], { y: 0, autoAlpha: 1 }, { y: -10, autoAlpha: 0, duration: 0.28, ease: 'power2.out' });
+      gsap.fromTo(ledes[i], { y: 16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.75, ease: 'power3.out', delay: 0.14 });
+      if (more) {
+        const txt = $('span', more);
+        if (moreTl) moreTl.kill();
+        moreTl = gsap.timeline().to(txt, { autoAlpha: 0, duration: 0.16, ease: 'power1.out' }).call(swapMore).to(txt, { autoAlpha: 1, duration: 0.4, ease: 'power2.out' });
+      }
+    }
+    picks.forEach((p) => p.addEventListener('click', () => {
+      const i = items.findIndex((it) => it.key === p.dataset.sat);
+      if (i < 0) return;
+      if (pick) pick(i); else { let d = i - cur; if (d > n / 2) d -= n; if (d < -n / 2) d += n; show(i, d >= 0 ? 1 : -1); }
+    }));
+    return {
+      items, show,
+      get index() { return cur; },
+      // the satellites take over choosing: they turn first, and call show() as each one arrives
+      onPick(fn) { pick = fn; }
     };
   }
 
@@ -1189,6 +1272,9 @@
     const signal = createSignal();
     const flow = createFlow($('#flowCanvas'), signal.pos);
     signal.onTap((x, y) => flow.surge(x, y));
+    const hero = createHeroCopy();
+    // what js/satellites.js needs to join in
+    window.ntell = { reduce, signal, flow, hero };
 
     // sections are initialised top to bottom so pinned scenes measure correctly
     initAbout();
@@ -1215,7 +1301,7 @@
       .to(flow.state, { intro: 1, duration: 2.6, ease: 'power2.out' }, 0.15)
       .from('.hero__label', { autoAlpha: 0, y: 14, duration: 0.8 }, 0.25)
       .from('.hero__line-in', { yPercent: 114, duration: 1.3, stagger: 0.12 }, 0.3)
-      .from('.hero__lede, .hero__cta > *', { autoAlpha: 0, y: 24, duration: 1, stagger: 0.08 }, 0.8)
+      .from('.hero__ledes, .hero__cta > *', { autoAlpha: 0, y: 24, duration: 1, stagger: 0.08 }, 0.8)
       .from('.hero__meta > *', { autoAlpha: 0, y: 10, duration: 0.7, stagger: 0.05 }, 1.1);
 
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';

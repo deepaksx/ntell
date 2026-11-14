@@ -22,16 +22,19 @@ index.html              All content and markup
 css/fonts.css           Self-hosted font faces
 css/style.css           Design tokens and every section's styles
 js/main.js              Motion layer (see below)
+js/satellites.js        The orb's satellites: five 3D models and their orbit (WebGL)
 assets/brand/           Signal-orb logo kit (SVG) and favicons
 assets/video/           Opening logo sting (MP4 and WebM)
 assets/img/             AVA character cut-outs and the share image
 assets/fonts/           Newsreader, Stack Sans Headline, Stack Sans Text, JetBrains Mono
-assets/vendor/          GSAP 3.13 (core, ScrollTrigger, SplitText) and Lenis 1.3
+assets/vendor/          GSAP 3.13 (core, ScrollTrigger, SplitText), Lenis 1.3 and three.js r180
 ```
 
 ## Page outline
 
 1. Hero: "We build the AI-native enterprise", with the signal orb in its field
+   and five satellites in orbit round it, one per industry. Turning the orb
+   brings the next satellite to the front, and the headline and text follow it
 2. Who we are: one partner for AI transformation, mission and values
 3. What we do: advise, build, equip, embed
 4. Industries, one chapter each, with the capabilities and what we bring to
@@ -82,6 +85,24 @@ adoption dots) are left out.
 - **Hero interactions**: drag the orb to spin it (mouse or touch, with
   momentum); move over the lines to bend them; press and hold to push them
   further apart; tap the orb to make the whole field ring.
+- **The satellites**: five small 3D models orbit the orb: a headquarters
+  (enterprise), a bank (financial services), a capitol (government), a shelf of
+  products (FMCG and consumer) and a growth chart on two joined halves (M&A and
+  value creation). They are built from code in `js/satellites.js` and lit in
+  WebGL on a transparent layer over the orb. An invisible sphere the size of
+  the orb holds the depth, so a satellite that passes behind the orb is hidden
+  by it, and one that passes in front casts its shadow on it. Each model runs
+  its own loop: windows light floor by floor, a coin drops into the bank, the
+  flag flies, a scanner sweeps the shelf, the halves meet and the bars rise.
+  Dragging the orb (or anywhere inside the orbit) turns the system and it
+  settles on the nearest satellite; a satellite can also be clicked, tapped or
+  reached with Tab and the arrow keys, and the list at the foot of the hero
+  picks one directly. Whichever is at the front sets the last word of the
+  headline, the label above it, the paragraph below and the second button. On
+  load the satellites swing out of the orb and come to rest on Enterprise; as
+  the page scrolls they draw back into it. Without WebGL the hero works
+  without them and the list still changes the text. With reduced motion they
+  are drawn once, standing still.
 - **What is changing**: a pinned canvas scene where a layered organisation
   chart reorganises into small teams with agent rings.
 - **How we work**: sticky stacking cards. **Industries**: each chapter heading
@@ -92,6 +113,14 @@ adoption dots) are left out.
 ## Editing content
 
 - Text is plain HTML in `index.html`, one commented block per section.
+- **Hero industries**: each satellite has one paragraph in the
+  `<div class="hero__ledes">` block, in orbit order. The paragraph is the text
+  shown under the headline; its attributes set the rest: `data-word` is the
+  word that ends the headline, `data-label` the line above it, `data-name` the
+  satellite's name for screen readers and tooltips, `data-cta` and `data-href`
+  the second button. The matching entries in the hero's footer list are the
+  `hero__pick` buttons. The models themselves live in `js/satellites.js`, one
+  function each.
 - **Team**: replace the `[ Name ]` / `[ Role ]` placeholders in the
   `<ul class="team__grid">` block. Add a photo by putting an `<img>` inside
   `.member__pic`.
@@ -120,5 +149,5 @@ settings and point DNS at it.
 
 ## Licences
 
-GSAP is used under its standard no-charge licence. Lenis is MIT. The fonts are
-under the SIL Open Font License.
+GSAP is used under its standard no-charge licence. Lenis and three.js are MIT.
+The fonts are under the SIL Open Font License.
