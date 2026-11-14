@@ -22,7 +22,7 @@ index.html              All content and markup
 css/fonts.css           Self-hosted font faces
 css/style.css           Design tokens and every section's styles
 js/main.js              Motion layer (see below)
-js/satellites.js        The orb's satellites: five 3D models and their orbit (WebGL)
+js/satellites.js        The orb's satellites: four 3D models and their orbit (WebGL)
 assets/brand/           Signal-orb logo kit (SVG) and favicons
 assets/video/           Opening logo sting (MP4 and WebM)
 assets/img/             AVA character cut-outs and the share image
@@ -32,8 +32,8 @@ assets/vendor/          GSAP 3.13 (core, ScrollTrigger, SplitText), Lenis 1.3 an
 
 ## Page outline
 
-1. Hero: "We build the AI-native enterprise", with the signal orb in its field
-   and five satellites in orbit round it, one per industry. Turning the orb
+1. Hero: "We build AI-native enterprises", with the signal orb in its field
+   and four satellites in orbit round it, one per industry. Turning the orb
    brings the next satellite to the front, and the headline and text follow it
 2. Who we are: one partner for AI transformation, mission and values
 3. What we do: advise, build, equip, embed
@@ -85,17 +85,19 @@ adoption dots) are left out.
 - **Hero interactions**: drag the orb to spin it (mouse or touch, with
   momentum); move over the lines to bend them; press and hold to push them
   further apart; tap the orb to make the whole field ring.
-- **The satellites**: five small 3D models orbit the orb: a headquarters
-  (enterprise), a bank (financial services), a capitol (government), a shelf of
-  products (FMCG and consumer) and a growth chart on two joined halves (M&A and
-  value creation). They are built from code in `js/satellites.js` and lit in
+- **The satellites**: four small 3D models orbit the orb: a headquarters
+  (enterprises), a bank (financial services), a capitol (government services)
+  and a shelf of products (consumer brands). They are built from code in `js/satellites.js` and lit in
   WebGL on a transparent layer over the orb. An invisible sphere the size of
   the orb holds the depth, so a satellite that passes behind the orb is hidden
   by it, and one that passes in front casts its shadow on it. Each model runs
   its own loop: windows light floor by floor, a coin drops into the bank, the
-  flag flies, a scanner sweeps the shelf, the halves meet and the bars rise.
-  Whichever satellite is at the front sets the last word of the headline, the
-  label above it, the paragraph below and the second button. On load the
+  flag flies, a scanner sweeps the shelf.
+  Whichever satellite is at the front sets the last words of the headline
+  ("We build AI-native enterprises / financial services / government services /
+  consumer brands"), the label above it, the paragraph below and the second
+  button. The headline's size is taken from its longest version, so every one
+  fits on a single line. On load the
   satellites swing out of the orb and come to rest on Enterprise; as the page
   scrolls they draw back into it. Everything heavy (models, shaders, one unseen
   frame) is prepared while the opening sting still covers the page.
@@ -109,12 +111,13 @@ adoption dots) are left out.
   clicked, tapped or reached with Tab and the arrow keys, and the list at the
   foot of the hero picks one directly. Moving the pointer over the field bends
   the lines only: the orb and the satellites do not react to it.
-- **Sound and touch**: a soft note when a satellite comes to the front, each
-  industry with its own pitch, and a lower one each time the orb lands on a
-  heading's full stop; on phones that support it a tick is felt as well. The
-  sounds are synthesised in `js/main.js` (no audio files). Browsers only allow
-  sound after a first tap, click or key press. The speaker button in the nav
-  turns it all off and the choice is remembered.
+- **Sound and touch**: one sound for everything, a short dry tick like a
+  picker wheel passing a value. It is heard when a satellite comes to the
+  front and each time the orb lands on a heading's full stop; on phones that
+  support it the tick is felt as well. It is synthesised in `js/main.js` (no
+  audio files) and is identical every time. Browsers only allow sound after a
+  first tap, click or key press. The speaker button in the nav turns it all
+  off and the choice is remembered.
 - **Fallbacks**: without WebGL, or on a machine that would draw it in
   software, the hero works without the satellites and the list still changes
   the text. With reduced motion they are drawn once, standing still. If frames

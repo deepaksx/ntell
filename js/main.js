@@ -381,18 +381,18 @@
   }
 
   /* ---------------------------------------------------------------------
-     Sound and touch. A soft note when the orb's satellites change places,
-     each industry with its own pitch, and a lower one when the orb lands on
-     a heading's full stop. On phones that can, a tick is felt as well.
-     Everything is synthesised here, so there are no audio files. Browsers
-     only allow sound after a first tap, click or key press: a visitor who
-     has only scrolled hears nothing until then. The button in the nav turns
-     it all off, and the choice is remembered.
+     Sound and touch. One sound for everything: a short, dry tick, the kind a
+     picker wheel makes as it passes each value. It is heard when a satellite
+     comes to the front and when the orb lands on a heading's full stop, and
+     on phones that can, it is felt as well. The tick is built once here from
+     the same samples every time, so it never varies, and there are no audio
+     files. Browsers only allow sound after a first tap, click or key press:
+     a visitor who has only scrolled hears nothing until then. The button in
+     the nav turns it all off, and the choice is remembered.
      --------------------------------------------------------------------- */
   function createFeedback() {
     const btn = $('#soundToggle'), KEY = 'ntell-sound';
-    const SCALE = [523.25, 587.33, 659.25, 783.99, 880];   // one note per industry: C, D, E, G, A
-    let on = true, ctx = null, out = null, last = 0, armed = false, sw = null;
+    let on = true, ctx = null, out = null, click = null, last = 0, armed = false, sw = null;
     try { on = window.localStorage.getItem(KEY) !== 'off'; } catch (err) { /* nowhere to keep the choice */ }
     const paint = () => {
       if (!btn) return;
@@ -408,32 +408,27 @@
         const AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) return;
         try { ctx = new AC(); } catch (err) { ctx = null; return; }
-        out = ctx.createGain(); out.gain.value = 0.5;
-        const soft = ctx.createBiquadFilter(); soft.type = 'lowpass'; soft.frequency.value = 5200;
-        out.connect(soft); soft.connect(ctx.destination);
+        // the tick: a few milliseconds of noise with a little body, gone almost as it starts
+        const sr = ctx.sampleRate, n = Math.floor(sr * 0.03);
+        click = ctx.createBuffer(1, n, sr);
+        const d = click.getChannelData(0), rnd = seeded(11);
+        for (let i = 0; i < n; i++) {
+          const t = i / sr, env = Math.exp(-t / 0.0026) * (1 - Math.exp(-t / 0.0002));
+          d[i] = ((rnd() * 2 - 1) * 0.5 + Math.sin(2 * Math.PI * 1750 * t) * 0.5) * env;
+        }
+        // kept soft: nothing boomy underneath it, nothing sharp on top
+        out = ctx.createGain(); out.gain.value = 0.42;
+        const low = ctx.createBiquadFilter(); low.type = 'highpass'; low.frequency.value = 650;
+        const high = ctx.createBiquadFilter(); high.type = 'lowpass'; high.frequency.value = 5600;
+        out.connect(low); low.connect(high); high.connect(ctx.destination);
       }
       if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     };
     ['pointerdown', 'keydown', 'touchend'].forEach((ev) => window.addEventListener(ev, wake, { capture: true, passive: true }));
-    const can = (gap) => {
-      if (!on || !ctx || ctx.state !== 'running') return false;
-      const now = performance.now();
-      if (now - last < gap) return false;
-      last = now;
-      return true;
-    };
-    // one plucked note: a quick rise, a short fall, and a slight bend down onto the pitch
-    const note = (freq, vol, dur, bend = 1, type = 'sine', at = 0) => {
-      const t = ctx.currentTime + at, o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = type;
-      o.frequency.setValueAtTime(freq * bend, t); o.frequency.exponentialRampToValueAtTime(freq, t + 0.05);
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.007); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      o.connect(g); g.connect(out); o.start(t); o.stop(t + dur + 0.04);
-    };
-    const buzz = (ms) => {
+    const buzz = () => {
       if (!on || !armed) return;
       try {
-        if (navigator.vibrate) { navigator.vibrate(ms); return; }
+        if (navigator.vibrate) { navigator.vibrate(8); return; }
         // iPhones have no vibration call, but Safari gives a switch control a tick when it flips
         if (!window.matchMedia('(pointer: coarse)').matches) return;
         if (!sw) {
@@ -448,18 +443,21 @@
       } catch (err) { /* feedback is a nicety */ }
     };
     const fx = {
-      // a satellite comes to the front
-      tick(i) { buzz(9); if (!can(70)) return; const f = SCALE[((i % 5) + 5) % 5]; note(f, 0.085, 0.3, 1.03); note(f * 2, 0.02, 0.14, 1, 'triangle'); },
-      // the orb lands on a full stop
-      dock() { buzz(6); if (!can(160)) return; note(196, 0.1, 0.22, 1.45); note(392, 0.028, 0.12, 1.2, 'triangle'); },
-      // a tap on the orb: the field rings
-      ring() { buzz(12); if (!can(160)) return; note(1318.5, 0.035, 0.7); note(1975.5, 0.014, 0.45, 1, 'sine', 0.02); }
+      tick() {
+        buzz();
+        if (!on || !ctx || ctx.state !== 'running') return;
+        const now = performance.now();
+        if (now - last < 45) return;
+        last = now;
+        const src = ctx.createBufferSource();
+        src.buffer = click; src.connect(out); src.start();
+      }
     };
     if (btn) btn.addEventListener('click', () => {
       on = !on;
       try { window.localStorage.setItem(KEY, on ? 'on' : 'off'); } catch (err) { /* not kept, that is all */ }
       paint();
-      if (on) { wake(); last = 0; fx.tick(2); }
+      if (on) { wake(); last = 0; fx.tick(); }
     });
     paint();
     return fx;
@@ -493,6 +491,21 @@
     const words = stack(word, 'hero__word', items.map((it) => it.word));
     const labels = stack(label, 'hero__tag', items.map((it) => it.label));
     let cur = 0, pick = null, moreTl = null, moreW = null;
+    // The headline is set as large as its column allows, and its longest version has to fit on one line.
+    // So the size is taken from that one: measured at full size, then scaled down just enough.
+    const title = word.closest('.hero__title');
+    const fit = () => {
+      title.style.removeProperty('--fit');
+      const widest = Math.max.apply(null, words.map((w) => w.getBoundingClientRect().width));
+      // beside the orb, a little of the column is left clear so the headline never reaches the satellites
+      const room = window.innerWidth > 860 ? title.clientWidth - 44 : title.clientWidth * 0.985;
+      const k = room / Math.max(1, widest);
+      if (k < 1) title.style.setProperty('--fit', k.toFixed(4));
+    };
+    fit();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    let fitT = 0;
+    window.addEventListener('resize', () => { clearTimeout(fitT); fitT = setTimeout(fit, 100); });
     const mark = (list, i) => list.forEach((el, k) => { el.classList.toggle('is-on', k === i); if (k === i) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', 'true'); });
     if (!reduce) [words, labels, ledes].forEach((list) => { gsap.set(list[0], { autoAlpha: 1 }); gsap.set(list.slice(1), { autoAlpha: 0 }); });
     // which versions are on screen, coming or going. Every change starts from wherever each one is now,
@@ -518,7 +531,7 @@
       mark(words, i); mark(labels, i); mark(ledes, i);
       picks.forEach((p) => { const on = p.dataset.sat === it.key; p.classList.toggle('is-on', on); p.setAttribute('aria-pressed', on ? 'true' : 'false'); });
       if (status) status.textContent = `Now showing: ${it.name}`;
-      if (fx) fx.tick(i);
+      if (fx) fx.tick();
       const swapMore = () => { if (!more) return; more.setAttribute('href', it.href); $('span', more).textContent = it.cta; };
       if (reduce) { swapMore(); return; }
       // The headline word: the old one fades where it stands, then the new one rises through the line's mask
@@ -1386,8 +1399,8 @@
     const signal = createSignal();
     const flow = createFlow($('#flowCanvas'), signal.pos);
     const fx = createFeedback();
-    signal.onTap((x, y) => { flow.surge(x, y); fx.ring(); });
-    signal.on('dock', () => fx.dock());
+    signal.onTap((x, y) => { flow.surge(x, y); fx.tick(); });
+    signal.on('dock', () => fx.tick());
     const hero = createHeroCopy(fx);
     // what js/satellites.js needs to join in
     window.ntell = { reduce, signal, flow, hero, fx, lenis };

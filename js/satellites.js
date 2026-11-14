@@ -1,6 +1,6 @@
 /* ==========================================================================
    ntell.ai — the orb's satellites
-   Five small worlds that orbit the signal orb in the hero, one per industry.
+   Four small worlds that orbit the signal orb in the hero, one per industry.
    Each is a real 3D model, built here from code and lit in WebGL (three.js),
    drawn on a transparent layer over the orb. An invisible sphere the size of
    the orb holds the depth buffer, so a satellite that passes behind the orb is
@@ -21,7 +21,6 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const smooth = (t) => { t = clamp(t); return t * t * (3 - 2 * t); };
 const easeOut = (t) => 1 - Math.pow(1 - clamp(t), 3);
 const easeIn = (t) => Math.pow(clamp(t), 3);
-const easeIO = (t) => { t = clamp(t); return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
 const easeBack = (t, c = 1.7) => { t = clamp(t); return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
 const span = (t, a, b) => clamp((t - a) / (b - a));
 const fract = (v) => v - Math.floor(v);
@@ -196,7 +195,6 @@ export function createKit() {
     bone: std(PAL.bone, { roughness: 0.42 }),
     ink: std(PAL.ink, { roughness: 0.4 }),
     blush: std(PAL.blush, { roughness: 0.5 }),
-    rose: std(PAL.rose, { roughness: 0.42 }),
     crimson: new THREE.MeshPhysicalMaterial({ color: PAL.crimson, roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.18 }),
     glow: new THREE.MeshBasicMaterial({ color: PAL.glow, toneMapped: false }),
     lamp: new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false })
@@ -226,7 +224,7 @@ export function createKit() {
 }
 
 /* ---------------------------------------------------------------------
-   The five satellites. Each builder fills s.body, standing on y = 0 inside a
+   The satellites. Each builder fills s.body, standing on y = 0 inside a
    deck of radius 1, and may set s.tick(t) for its loop and s.parts for the
    pieces that assemble when it comes to the front.
    --------------------------------------------------------------------- */
@@ -431,59 +429,9 @@ function consumer(s, kit) {
   };
 }
 
-// M&A and value creation: two halves brought together, and what they are worth, rising.
-function deals(s, kit) {
-  const { mat, mesh, group } = kit;
-  const all = group(s.body);
-  all.scale.setScalar(0.96);
-  const L = group(all), R = group(all);
-  mesh(rbox(0.68, 0.26, 0.98, 0.04), mat.ink, L, -0.35, 0.13, 0);
-  mesh(rbox(0.68, 0.26, 0.98, 0.04), mat.white, R, 0.35, 0.13, 0);
-  // the seal over the join
-  const seal = mesh(rcyl(0.13, 0.13, 0.05, 0.018, 32), mat.crimson, all, 0, 0.245, 0.3);
-  const bar = (parent, x, h, material) => { const g = group(parent, x, 0.26, -0.14); mesh(rbox(0.25, h, 0.25, 0.035), material, g, 0, h / 2, 0); return g; };
-  const bars = [bar(L, -0.4, 0.3, mat.blush), bar(all, 0, 0.56, mat.rose), bar(R, 0.4, 0.86, mat.crimson)];
-  // the line of value, and the arrowhead that leads it
-  const path = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-0.72, 0.78, 0.2), new THREE.Vector3(-0.38, 0.86, 0.2), new THREE.Vector3(-0.02, 1.08, 0.2),
-    new THREE.Vector3(0.3, 1.42, 0.2), new THREE.Vector3(0.52, 1.74, 0.2)
-  ], false, 'catmullrom', 0.5);
-  const SEG = 72, RAD = 10;
-  const tube = mesh(new THREE.TubeGeometry(path, SEG, 0.034, RAD, false), mat.ink, all);
-  const head = mesh(lathe((p) => p.line(0, 0, 0.1, 0).line(0.1, 0, 0, 0.24), 24), mat.ink, all);
-  const tail = mesh(new THREE.SphereGeometry(0.034, 12, 8), mat.ink, all);
-  tail.position.copy(path.getPoint(0));
-  const up = new THREE.Vector3(0, 1, 0), tan = new THREE.Vector3();
-  s.parts = [bars[0], bars[1], bars[2]];
-  s.tick = (t) => {
-    const u = fract(t / 8.5);
-    // the halves draw apart, then meet; the join is sealed
-    const gap = 0.2 * (u < 0.5 ? 1 - easeOut(span(u, 0, 0.08)) : easeIO(span(u, 0.9, 0.99)));
-    L.position.x = -gap; R.position.x = gap;
-    const meet = Math.sin(span(u, 0.07, 0.16) * Math.PI);
-    all.scale.set(0.96 * (1 - 0.03 * meet), 0.96 * (1 + 0.045 * meet), 0.96);
-    seal.scale.setScalar(Math.max(0.001, u < 0.5 ? easeBack(span(u, 0.07, 0.15), 3) : 1 - easeIn(span(u, 0.88, 0.93))));
-    // the bars grow one after another, and settle back before the next round
-    bars.forEach((g, k) => {
-      const grow = easeBack(span(u, 0.1 + k * 0.05, 0.25 + k * 0.05), 1.9), fall = easeIO(span(u, 0.9, 0.98));
-      g.scale.y = Math.max(0.02, lerp(0.45, 1, grow * (1 - fall)) + 0.02 * Math.sin(t * 2 + k));
-    });
-    // the line draws on, and the arrowhead rides its tip
-    const d = easeIO(span(u, 0.24, 0.46)) * (1 - easeIO(span(u, 0.9, 0.98)));
-    const n = Math.round(SEG * d);
-    tube.geometry.setDrawRange(0, n * RAD * 6);
-    const at = clamp(n / SEG, 0.001, 1);
-    path.getPoint(at, head.position); path.getTangent(at, tan);
-    head.quaternion.setFromUnitVectors(up, tan);
-    const show = smooth(span(d, 0.02, 0.12));
-    head.scale.setScalar(Math.max(0.001, show)); tail.scale.setScalar(Math.max(0.001, show));
-    tube.visible = n > 0;
-  };
-}
-
-const BUILDERS = { enterprise, finance, government, consumer, deals };
+const BUILDERS = { enterprise, finance, government, consumer };
 const GLOW = new THREE.Color(PAL.glow), PALE = new THREE.Color(0xFFE4EA), TINT = new THREE.Color();
-export const ORDER = ['enterprise', 'finance', 'government', 'consumer', 'deals'];
+export const ORDER = ['enterprise', 'finance', 'government', 'consumer'];
 
 export function buildSatellite(key, kit) {
   const root = new THREE.Group(), body = new THREE.Group();
@@ -562,7 +510,7 @@ export function createStudio(canvas, opts = {}) {
 }
 
 /* ---------------------------------------------------------------------
-   The hero system: five satellites on one orbit round the signal orb.
+   The hero system: the satellites on one orbit round the signal orb.
 
    Two things can be turned, each from its own place. A drag that starts on
    the orb turns the orb alone (main.js). A drag that starts in the orbit
@@ -574,9 +522,9 @@ export function createStudio(canvas, opts = {}) {
 const N = ORDER.length, STEP = TAU / N;
 const CAM_D = 11;                 // camera distance, in orb radii
 const CAM_EL = (29 * Math.PI) / 180;  // how far above the orbit's plane the camera sits
-const ECC = 0.26;                 // the orbit swings wider behind the orb, so the far satellites show past its shoulders
+const ECC = 1.0;                  // the orbit swings wide behind the orb, so the far satellite stands clear above it
 const ORB_VIS = 0.9925;           // the drawn orb's radius as a share of its element's half-size
-const POSE = { enterprise: 2.2, finance: 1.4, government: 1.1, consumer: 2.3, deals: 5 };  // each loop's best moment, for the still version
+const POSE = { enterprise: 2.2, finance: 1.4, government: 1.1, consumer: 2.3 };  // each loop's best moment, for the still version
 const SPAN_W = 2.42, SPAN_H = 1.84; // the layer's size, in orb diameters
 const TIP_MIN = -0.95, TIP_MAX = 0.2; // how far the orbit's plane can be tipped: back to see it from below, forward a little
 const TAKE = 0.56;                // how far towards the front a satellite must come before the hero changes over to it
@@ -676,12 +624,12 @@ async function initHero(ntell) {
 
   const S = {
     yaw: 0, vel: 0, target: 0,        // the orbit's turn, its speed, and where it is coming to rest
-    slot: 0, index: 0,                // the satellite the hero is showing: counted round and round, and as 0 to 4
+    slot: 0, index: 0,                // the satellite the hero is showing: counted round and round, and as its place in ORDER
     tip: 0, chain: 0,                 // how far the plane is tipped, and the speed of any scroll a drag has handed on
     dragging: false, wheeling: false, touch: false, touched: false,
     hover: -1, focus: -1,
     deploy: 0, spinIn: 0, nudge: 0, launched: false, warm: false,
-    ring: 1.62, size: 0.31, s0: 1, W: 1, H: 1, shown: false, t: 0, last: 0, lastSurge: 0
+    ring: 1.62, ecc: ECC, size: 0.31, s0: 1, W: 1, H: 1, shown: false, t: 0, last: 0, lastSurge: 0
   };
   // Quality steps down if frames run long: full, then standard pixel density, then no shadows, then off.
   const G = { level: 0, ema: 16, n: 0, last: 0, off: false };
@@ -694,7 +642,8 @@ async function initHero(ntell) {
   const screen = sats.map(() => ({ x: 0, y: 0, r: 0, on: false, d: 0, cur: null }));
   const hov = sats.map(() => 0);
   const mod = (i) => ((i % N) + N) % N;
-  const radius = (th) => S.ring * (1 + (ECC * (1 - Math.cos(th))) / 2);
+  // a circle across the front and at the sides, drawn out to a point of an egg behind the orb
+  const radius = (th) => S.ring * (1 + S.ecc * Math.pow(Math.max(0, -Math.cos(th)), 1.5));
 
   function build() {
     const r = stage.getBoundingClientRect();
@@ -712,10 +661,13 @@ async function initHero(ntell) {
     // (where the text sits beside the orb, that side ends at the text)
     const cx = r.left + r.width / 2, half = S.s0 / 2;
     const lede = document.getElementById('heroLedes'), lr = lede ? lede.getBoundingClientRect() : null;
-    const beside = lr && lr.right < r.left && lr.bottom > r.top && lr.top < r.bottom;
-    const room = Math.min(beside ? cx - lr.right - 8 : cx, window.innerWidth - cx) / half;
+    const beside = lr && lr.left < r.left && lr.bottom > r.top && lr.top < r.bottom && window.innerWidth > 860;
+    let edge = 0;
+    document.querySelectorAll('.hero__word, .hero__lede').forEach((w) => { edge = Math.max(edge, w.getBoundingClientRect().right); });
+    const room = Math.min(beside ? cx - edge - 14 : cx, window.innerWidth - cx) / half;
     const compact = window.innerWidth < 860;
     S.size = compact ? 0.37 : 0.36;
+    S.ecc = compact ? -0.08 : ECC;    // on a phone the nav is up there, so the far satellite stays tucked behind the orb instead
     S.ring = clamp((room - S.size * 1.25) / 1.07, 1.36, compact ? 1.56 : 1.66);
     if (ringMesh) { rig.remove(ringMesh); ringMesh.geometry.dispose(); ringMesh.material.dispose(); }
     const px = 1 / half, pts = [];
@@ -727,7 +679,7 @@ async function initHero(ntell) {
   }
 
   // The hero shows one satellite at a time. Which one is kept as a count that runs on round the orbit,
-  // so going forwards from the fifth to the first is one step, not four steps back.
+  // so going forwards from the last to the first is one step, not all the way back.
   function setSlot(slot, dir) {
     S.slot = slot;
     const i = mod(slot);
@@ -772,7 +724,7 @@ async function initHero(ntell) {
     const now = performance.now(), dt = clamp((now - dragAt) / 1000, 0.004, 0.1);
     dragAt = now;
     // sideways turns the orbit
-    const d = dx / (r * 1.05);
+    const d = dx / (r * 0.92);
     S.yaw += d; S.vel = lerp(S.vel, d / dt, 0.4);
     follow();
     // up and down tips it; a drag that is mostly sideways hardly tips it at all
@@ -933,7 +885,11 @@ async function initHero(ntell) {
 
   build();
   let rt = 0;
-  window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { build(); if (still) frame(); }, 120); });
+  const rebuild = () => { clearTimeout(rt); rt = setTimeout(() => { build(); if (still) frame(); }, 120); };
+  window.addEventListener('resize', rebuild);
+  // the orbit is fitted to the headline beside it, and the headline is only its true width once its font is in
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(rebuild);
+  window.addEventListener('load', rebuild);
   if (hero) hero.onPick((i) => goTo(i));
   ntell.satellites = { goTo, step, state: S, sats };
   document.documentElement.classList.add('sats-on');

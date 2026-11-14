@@ -272,13 +272,14 @@ main, .foot { position: relative; z-index: 1; }
 .hero__label { margin-bottom: 1.6em; }
 /* the words that change with the satellite at the front: every version sits in one grid cell, so nothing below it moves */
 .hero__tags, .hero__words, .hero__ledes { display: grid; }
+.hero__words { justify-items: start; }
 .hero__tag, .hero__word, .hero__lede { grid-area: 1 / 1; }
 .hero__tag:not(.is-on), .hero__word:not(.is-on), .hero__ledes .hero__lede:not(.is-on) { visibility: hidden; }
 .hero__word { white-space: nowrap; will-change: transform; }
 html:not(.js) .hero__lede:not(.is-on) { display: none; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .hero__title {
-  font-family: var(--f-serif); font-weight: 400; font-size: var(--fs-hero);
+  font-family: var(--f-serif); font-weight: 400; font-size: calc(var(--fs-hero) * var(--fit, 1));
   line-height: 1.0; letter-spacing: -0.03em; margin-bottom: 0.42em;
 }
 .hero__line { display: block; overflow: clip; white-space: nowrap; padding: 0.08em 0.06em 0.2em; margin: -0.08em -0.06em -0.2em; }
@@ -338,7 +339,7 @@ html:not(.js) .hero__pick { cursor: default; }
   .hero__stage { grid-column: 1; grid-row: 1; width: min(44vw, 28vh, 300px); align-self: center; margin-bottom: 30px; }
   .hero__hint { display: none; }
   .hero__text { grid-column: 1; grid-row: 2; padding-block: 8px 20px; }
-  .hero__title { font-size: clamp(2.5rem, 11.4vw, 4rem); }
+  .hero__title { font-size: calc(clamp(2.5rem, 11.4vw, 4rem) * var(--fit, 1)); }
   .hero__meta { grid-row: 3; }
   .hero__pick { display: none; }
   .hero__scroll { margin-left: 0; }
