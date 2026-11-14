@@ -488,10 +488,14 @@ export function createStudio(canvas, opts = {}) {
   panel(0xffffff, 1.6, 8, 3, 3, 5, 8);
   panel(0xFFB3C3, 1.2, 0, -9, 0, 12, 12);
   panel(0xffffff, 1.2, 0, 4, -9, 14, 5);
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(room, 0.035, 0.1, 100, { size: opts.envSize || 256 }).texture;
+  // (made by a function, so it can be made again if the browser ever takes the graphics context away and gives it back)
+  const relight = () => {
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(room, 0.035, 0.1, 100, { size: opts.envSize || 256 }).texture;
+    pmrem.dispose();
+  };
+  relight();
   scene.environmentIntensity = opts.env ?? 0.3;
-  pmrem.dispose();
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0xEFA9B8, 0.62);
   const key = new THREE.DirectionalLight(0xFFF8F4, 3.0);
@@ -506,7 +510,7 @@ export function createStudio(canvas, opts = {}) {
   const rim = new THREE.DirectionalLight(0xffffff, 0.6);
   rim.position.set(3, 5, -6);
   scene.add(hemi, key, key.target, fill, rim);
-  return { THREE, renderer, scene, lights: { hemi, key, fill, rim } };
+  return { THREE, renderer, scene, relight, lights: { hemi, key, fill, rim } };
 }
 
 /* ---------------------------------------------------------------------
@@ -642,13 +646,18 @@ async function initHero(ntell) {
     local: false, held: 0,            // this drag began on the satellite at the front, and which one that was
     ring: 1.62, ecc: ECC, size: 0.31, s0: 1, W: 1, H: 1, shown: false, t: 0, last: 0, lastSurge: 0
   };
-  // Quality steps down if frames run long: full, then standard pixel density, then no shadows, then off.
-  const G = { level: 0, ema: 16, n: 0, last: 0, off: false };
+  // Quality steps down if frames run long: full, then standard pixel density, then no shadows. That is as far
+  // as it goes: the satellites are never taken away. (They once were, as a last step, and a visitor saw them
+  // vanish while turning them.) The mark for "long" is set well past thirty frames a second, because many
+  // browsers hold themselves to that to save power, and drawing less would not make those any faster.
+  // Frames are judged a run at a time, by the run's average, so a few long ones (the hero changing over,
+  // say) do not count against it.
+  const SLOW = 46, SAMPLE = 150;    // milliseconds a frame, on average; and how many frames make a run
+  const G = { level: 0, sum: 0, n: 0, last: 0 };
   function easeOff() {
-    G.level++; G.n = 0; G.ema = 16;
+    G.level++;
     if (G.level === 1) { renderer.setPixelRatio(1); renderer.setSize(S.W, S.H, false); }
-    else if (G.level === 2) { studio.lights.key.castShadow = false; catcher.visible = false; }
-    else { G.off = true; wrap.style.visibility = 'hidden'; stage.classList.remove('has-sats'); document.documentElement.classList.remove('sats-on'); }
+    else { studio.lights.key.castShadow = false; catcher.visible = false; }
   }
   const screen = sats.map(() => ({ x: 0, y: 0, r: 0, on: false, d: 0, cur: null }));
   const hov = sats.map(() => 0);
@@ -787,17 +796,21 @@ async function initHero(ntell) {
     else if (e.key === 'ArrowLeft') { step(-1); e.preventDefault(); }
   });
   // a sideways swipe on a trackpad (or shift and the wheel) turns the orbit; up and down still scrolls the page
-  let wheelT = 0;
+  let wheelAt = 0;
   stage.addEventListener('wheel', (e) => {
-    if (still || !S.launched || G.off || signal.state.stageU > 0.3) return;
-    const dx = e.deltaX * (e.deltaMode === 1 ? 16 : 1);
-    if (Math.abs(dx) < 0.5 || Math.abs(dx) < Math.abs(e.deltaY) * 1.3) return;
+    if (still || !S.launched || signal.state.stageU > 0.3) return;
+    const unit = e.deltaMode === 1 ? 16 : 1, dx = e.deltaX * unit, dy = e.deltaY * unit;
+    const side = Math.abs(dx) >= 0.5 && Math.abs(dx) >= Math.abs(dy) * 1.3;
+    // No swipe is quite level. Once one has hold of the orbit, the little of it that runs up or down is
+    // dropped, so the page cannot creep away underneath (the satellites draw back into the orb when the page
+    // scrolls). A swipe that turns plainly up or down is the page's again.
+    if (!side && !(S.wheeling && Math.abs(dy) < Math.abs(dx) * 3 + 8)) return;
     e.preventDefault(); e.stopPropagation();
+    if (!side) return;
     S.wheeling = true; S.touched = true; S.vel = 0;
     S.yaw -= clamp(dx, -90, 90) / Math.max(40, signal.pos.r * 1.7);
     follow();
-    clearTimeout(wheelT);
-    wheelT = setTimeout(() => { S.wheeling = false; settle(0); }, 140);
+    wheelAt = performance.now();   // the swipe is over when no more of it has come for a moment: see frame()
   }, { passive: false });
 
   const v = new THREE.Vector3(), up = new THREE.Vector3(), e = new THREE.Euler(), qRig = new THREE.Quaternion(), q = new THREE.Quaternion();
@@ -806,7 +819,7 @@ async function initHero(ntell) {
     let pos = signal.pos;
     if (still || S.warm) { const r = stage.getBoundingClientRect(); fixed.x = r.left + r.width / 2; fixed.y = r.top + r.height / 2; fixed.r = r.width / 2; pos = fixed; }
     if (still) { S.yaw = S.target; S.vel = 0; }
-    if (!pos.live || !(S.launched || S.warm) || G.off) return;
+    if (!pos.live || !(S.launched || S.warm)) return;
     const now = still ? 0 : performance.now() / 1000, dt = Math.min(0.05, now - S.last || 0.016);
     S.last = now; S.t = now;
     // the satellites belong to the hero: they draw back into the orb as it rolls away
@@ -821,9 +834,15 @@ async function initHero(ntell) {
       if (!still && !forced) {
         const real = performance.now(), gap = real - G.last;
         G.last = real;
-        if (gap < 250) { G.ema += (gap - G.ema) * 0.05; G.n++; }
-        if (G.n > 100 && G.ema > 36) { easeOff(); if (G.off) return; }
+        if (G.level < 2 && gap < 250) {
+          G.sum += gap; G.n++;
+          if (G.n >= SAMPLE) { if (G.sum / G.n > SLOW) easeOff(); G.sum = 0; G.n = 0; }
+        }
       }
+      // A sideways swipe ends when none of it has arrived for a moment. That is judged here, once a frame, and
+      // not by a timer: a timer can run out in the middle of a swipe when a frame takes long, and the orbit
+      // would spring back under the hand.
+      if (S.wheeling && performance.now() - wheelAt > 140) { S.wheeling = false; settle(0); }
       // turning: free while a hand is on it, then a spring to the chosen satellite
       if (S.dragging) S.vel *= 0.86;
       else if (!S.wheeling) {
@@ -911,6 +930,9 @@ async function initHero(ntell) {
   let rt = 0;
   const rebuild = () => { clearTimeout(rt); rt = setTimeout(() => { build(); if (still) frame(); }, 120); };
   window.addEventListener('resize', rebuild);
+  // A browser may take the graphics context away (the graphics card was reset, or handed to something else)
+  // and give it back later. The renderer picks up again by itself; the room the models reflect is made again here.
+  canvas.addEventListener('webglcontextrestored', () => { try { studio.relight(); } catch (err) { /* they are still lit by the lamps */ } build(); if (still) frame(); });
   // the orbit is fitted to the headline beside it, and the headline is only its true width once its font is in
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(rebuild);
   window.addEventListener('load', rebuild);
@@ -928,7 +950,11 @@ async function initHero(ntell) {
   if (hint) hint.textContent = 'Drag the orbit to turn it';
   // warm up: shaders first (off the main thread where the browser can), then one frame nobody sees
   await pause();
-  try { if (renderer.compileAsync) await renderer.compileAsync(scene, camera); else renderer.compile(scene, camera); } catch (err) { /* it will compile on first use instead */ }
+  // (the wait has a limit: if the browser loses the graphics context just here, that promise is never kept)
+  try {
+    if (renderer.compileAsync) await Promise.race([renderer.compileAsync(scene, camera), new Promise((ok) => setTimeout(ok, 5000))]);
+    else renderer.compile(scene, camera);
+  } catch (err) { /* it will compile on first use instead */ }
   await pause();
   S.warm = true; S.deploy = 1; S.spinIn = 1;
   frame();

@@ -142,7 +142,11 @@ adoption dots) are left out.
 - **Fallbacks**: without WebGL, or on a machine that would draw it in
   software, the hero works without the satellites and the list still changes
   the text. With reduced motion they are drawn once, standing still. If frames
-  run long the layer steps its own quality down.
+  run long the layer steps its own quality down, twice at most: standard
+  pixel density, then no shadows. It never removes the satellites. A browser
+  that holds itself to thirty frames a second (many do, to save power) does
+  not count as slow. If the browser takes the graphics context away and gives
+  it back, the satellites come back with it.
 - **What is changing**: a pinned canvas scene where a layered organisation
   chart reorganises into small teams with agent rings.
 - **How we work**: sticky stacking cards. **Industries**: each chapter heading
