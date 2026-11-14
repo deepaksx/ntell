@@ -1509,10 +1509,24 @@
     const hero = createHeroCopy(fx);
     // what js/satellites.js needs to join in
     window.ntell = { reduce, signal, flow, hero, fx, lenis };
-    // The satellites do their heavy setting-up when it cannot be seen as a stutter: under the video while it
-    // plays, or once the hero has finished arriving. This promise says when.
-    let calm = () => {};
-    window.ntell.calm = new Promise((ok) => { calm = ok; });
+    // The satellites do their heavy setting-up in pieces, and before each piece they ask whether there is a
+    // moment to spare, so that none of it is seen as a stutter. There is one whenever the opening video is
+    // playing (the video does not need this thread) or nothing is on screen yet. Where the opening is drawn in
+    // code there is one only while that drawing stands still: the n and the orb at rest, and the finished
+    // wordmark. While the hero is arriving there is none until it has arrived.
+    const ph = { lifted: false, drawn: false, settled: reduce, sting: null };
+    window.ntell.spare = () => new Promise((ok) => {
+      const look = () => {
+        if (ph.settled) { ok(); return; }
+        if (!ph.lifted) {
+          if (!ph.drawn) { ok(); return; }
+          const t = ph.sting ? ph.sting.time() : 0;
+          if ((t > 0.98 && t < 1.5) || t > 2.66) { ok(); return; }
+        }
+        requestAnimationFrame(look);
+      };
+      look();
+    });
 
     // sections are initialised top to bottom so pinned scenes measure correctly
     initAbout();
@@ -1531,7 +1545,7 @@
     initFooter();
     initNav(signal);
 
-    if (reduce) { if (loader) loader.remove(); calm(); fetchSatellites(); return; }
+    if (reduce) { if (loader) loader.remove(); fetchSatellites(); return; }
 
     const intro = gsap.timeline({ paused: true, defaults: { ease: 'expo.out' } });
     intro
@@ -1551,8 +1565,9 @@
     let lifted = false;
     const lift = (quick) => {
       if (lifted) return; lifted = true;
+      ph.lifted = true;
+      setTimeout(() => { ph.settled = true; }, quick ? 1800 : 2900);
       fetchSatellites();
-      setTimeout(calm, quick ? 2400 : 2900);
       if (lenis) lenis.start();
       const out = gsap.timeline({ onComplete: () => loader.remove() });
       if (quick) out.to(loader, { autoAlpha: 0, duration: 0.35, ease: 'power1.out' });
@@ -1580,7 +1595,6 @@
     const takeOver = () => {
       if (started || drawn || lifted) return;
       started = true;
-      calm();
       fetchSatellites();
       video.playbackRate = 1.12;
       requestAnimationFrame(watch);
@@ -1594,9 +1608,13 @@
       video.removeAttribute('src');
       try { video.load(); } catch (err) { /* nothing was loading */ }
       video.style.display = 'none';
+      // The 3D library is downloaded from the start, and run from the first moment the drawing stands still.
+      // From there the satellites set up in the drawing's still moments, so they can arrive with the hero.
       warmSatellites();
+      ph.drawn = true;
       sting = drawSting(loader, () => lift(false));
-      if (!sting) lift(true);
+      ph.sting = sting;
+      if (sting) sting.call(fetchSatellites, null, 1.0); else lift(true);
     };
     if (touch) drawInstead();
     else {

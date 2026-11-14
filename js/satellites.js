@@ -489,7 +489,7 @@ export function createStudio(canvas, opts = {}) {
   panel(0xFFB3C3, 1.2, 0, -9, 0, 12, 12);
   panel(0xffffff, 1.2, 0, 4, -9, 14, 5);
   const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(room, 0.035).texture;
+  scene.environment = pmrem.fromScene(room, 0.035, 0.1, 100, { size: opts.envSize || 256 }).texture;
   scene.environmentIntensity = opts.env ?? 0.3;
   pmrem.dispose();
 
@@ -561,17 +561,19 @@ async function initHero(ntell) {
   // Everything heavy is done a piece at a time, a frame apart, while the opening animation still covers
   // the page: the studio, each model, the shaders, and one unseen frame that sends it all to the graphics
   // card. By the time the hero is shown there is nothing left to wait for, so nothing can make it stutter.
-  // The page says when that can start without being seen as a stutter (ntell.calm, in main.js): at once
-  // under the opening video, otherwise when the hero's own entrance has finished.
+  // Before each piece the page is asked whether there is a moment to spare (ntell.spare, in main.js): under
+  // the opening video there always is; where the opening is drawn in code, only while it stands still; and
+  // while the hero is arriving, not until it has.
   const nextFrame = () => new Promise((done) => requestAnimationFrame(() => done()));
-  if (!still && ntell.calm) await ntell.calm;
-  await nextFrame();
+  const pause = async () => { await nextFrame(); if (!still && ntell.spare) await ntell.spare(); };
+  await pause();
   const canvas = document.createElement('canvas');
   let studio;
-  try { studio = createStudio(canvas, { shadowSize: window.innerWidth < 860 ? 1024 : 2048 }); } catch (err) { return; }
+  const small = window.innerWidth < 860;
+  try { studio = createStudio(canvas, { shadowSize: small ? 1024 : 2048, envSize: small ? 64 : 256 }); } catch (err) { return; }
   const { renderer, scene } = studio;
   const kit = createKit();
-  await nextFrame();
+  await pause();
 
   const camera = new THREE.PerspectiveCamera(17, SPAN_W / SPAN_H, 1, 40);
   camera.position.set(0, Math.sin(CAM_EL) * CAM_D, Math.cos(CAM_EL) * CAM_D);
@@ -591,7 +593,7 @@ async function initHero(ntell) {
   for (let i = 0; i < N; i++) {
     const s = buildSatellite(ORDER[i], kit);
     s.t0 = -i * 1.7; scene.add(s.root); sats.push(s);
-    await nextFrame();
+    await pause();
   }
 
   // the orbit: a hairline, with two small signals travelling along it
@@ -893,9 +895,9 @@ async function initHero(ntell) {
   function launch() {
     if (S.launched) return;
     S.launched = true;
-    gsap.to(S, { deploy: 1, duration: 2.1, ease: 'power2.out', delay: 0.35 });
-    gsap.to(S, { spinIn: 1, duration: 2.9, ease: 'none', delay: 0.35 });
-    gsap.delayedCall(1.9, () => { sats[S.index].t0 = S.t; sats[S.index].play(); });
+    gsap.to(S, { deploy: 1, duration: 1.7, ease: 'power2.out', delay: 0.1 });
+    gsap.to(S, { spinIn: 1, duration: 2.3, ease: 'none', delay: 0.1 });
+    gsap.delayedCall(1.5, () => { sats[S.index].t0 = S.t; sats[S.index].play(); });
     // if nobody has turned it yet, it leans a little towards the next satellite and back, once: an invitation
     gsap.delayedCall(6.5, () => {
       if (S.touched || S.dragging || signal.state.stageU > 0.05) return;
@@ -925,8 +927,9 @@ async function initHero(ntell) {
   const hint = document.getElementById('heroHint');
   if (hint) hint.textContent = 'Drag the orbit to turn it';
   // warm up: shaders first (off the main thread where the browser can), then one frame nobody sees
+  await pause();
   try { if (renderer.compileAsync) await renderer.compileAsync(scene, camera); else renderer.compile(scene, camera); } catch (err) { /* it will compile on first use instead */ }
-  await nextFrame();
+  await pause();
   S.warm = true; S.deploy = 1; S.spinIn = 1;
   frame();
   S.warm = false; S.deploy = 0; S.spinIn = 0;

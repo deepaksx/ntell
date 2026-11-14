@@ -109,9 +109,10 @@ adoption dots) are left out.
   fits on a single line. On load the
   satellites swing out of the orb and come to rest on Enterprise; as the page
   scrolls they draw back into it. Everything heavy (models, shaders, one unseen
-  frame) is prepared where it cannot be seen as a stutter: under the opening
-  video while it plays, or, where the opening is drawn in code, once the hero
-  has finished arriving. The 3D library itself is fetched only once the
+  frame) is prepared in pieces, where it cannot be seen as a stutter: under the
+  opening video while it plays, or, where the opening is drawn in code, in the
+  moments that drawing stands still. So the satellites are ready when the hero
+  appears and swing out with it. The 3D library itself is fetched once the
   opening is under way, and not at all when the browser asks to save data.
 - **The view**: the orbit runs round the orb at its equator and is seen from
   only just above its own plane, tipped a little towards the viewer. So each
