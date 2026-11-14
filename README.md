@@ -101,13 +101,21 @@ adoption dots) are left out.
   satellites swing out of the orb and come to rest on Enterprise; as the page
   scrolls they draw back into it. Everything heavy (models, shaders, one unseen
   frame) is prepared while the opening sting still covers the page.
-- **Two things to turn**: a drag that starts on the orb turns the orb alone. A
-  drag that starts in the orbit round it, on a satellite or in the space
-  between them, turns the orbit: sideways brings the next satellite to the
-  front and it settles there, up and down tips the plane of the orbit, far
-  enough to see the satellites from underneath but never over the top. On a
-  touch screen a drag that reaches the end of the tilt carries on into the
-  page. A sideways trackpad swipe turns the orbit too. A satellite can also be
+- **The view**: the orbit is seen from only just above its own plane, so each
+  model is met from the front, and the one at the front faces straight out of
+  the page. The orbit runs below the orb's middle, so that model stands on the
+  orb's lower half.
+- **Three things to turn**: a drag that starts on the orb turns the orb alone.
+  A drag that starts in the orbit round it, on a satellite at the side or in
+  the space between them, turns the orbit: sideways brings the next satellite
+  to the front and it settles there, up and down tips the plane of the orbit,
+  far enough to look down on the satellites or see them from underneath but
+  never over the top. A drag that starts on the satellite at the front turns
+  that one model on its own disc, a little to either side; it stays as it is
+  left until another satellite takes its place, and a drag that goes past the
+  end of that turn carries on into turning the orbit. On a touch screen a
+  drag that reaches the end of the tilt carries on into the page. A sideways
+  trackpad swipe turns the orbit too. A satellite can also be
   clicked, tapped or reached with Tab and the arrow keys, and the list at the
   foot of the hero picks one directly. Moving the pointer over the field bends
   the lines only: the orb and the satellites do not react to it.

@@ -311,6 +311,7 @@ html:not(.js) .hero__lede:not(.is-on) { display: none; }
 .hero__stage:not(.has-sats) .hero__orbit { display: none; }
 .sat-hit { position: absolute; left: 0; top: 0; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }
 .sat-hit.is-off { pointer-events: none; }
+.sat-hit[aria-pressed="true"] { cursor: grab; }
 .sat-hit:focus-visible { border-radius: 50%; }
 .hero__stage.is-away .sat-hit, .hero__stage:not(.has-sats) .sat-hit { visibility: hidden; }
 .hero__stage.is-dragging .sat-hit { cursor: grabbing; }

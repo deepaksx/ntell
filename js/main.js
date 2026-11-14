@@ -241,7 +241,7 @@
         drag.orbit = !!(subs.drag && e.target.closest && e.target.closest('.sat-hit, .hero__orbit'));
         try { stage.setPointerCapture(e.pointerId); } catch (err) { /* capture is a nicety */ }
         stage.classList.add('is-dragging');
-        if (drag.orbit) emit('dragstart', e.pointerType);
+        if (drag.orbit) emit('dragstart', e.pointerType, e.target);
         e.preventDefault();
       });
       stage.addEventListener('pointermove', (e) => {

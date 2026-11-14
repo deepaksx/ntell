@@ -512,21 +512,29 @@ export function createStudio(canvas, opts = {}) {
 /* ---------------------------------------------------------------------
    The hero system: the satellites on one orbit round the signal orb.
 
-   Two things can be turned, each from its own place. A drag that starts on
-   the orb turns the orb alone (main.js). A drag that starts in the orbit
-   round it, on a satellite or in the space between them, turns the orbit:
-   sideways brings the next satellite to the front, up and down tips the
-   plane of the orbit, far enough to look at the satellites from underneath
-   but never over the top. A sideways swipe on a trackpad turns it too.
+   Three things can be turned, each from its own place. A drag that starts
+   on the orb turns the orb alone (main.js). A drag that starts in the orbit
+   round it, on a satellite at the side or in the space between them, turns
+   the orbit: sideways brings the next satellite to the front, up and down
+   tips the plane of the orbit, far enough to look at the satellites from
+   above or from underneath but never over the top. A sideways swipe on a
+   trackpad turns it too. And a drag that starts on the satellite at the
+   front turns that one model on its own disc, a little to either side; at
+   the end of that travel the drag carries on into turning the orbit.
+
+   The orbit is seen from only just above its own plane, so each model is
+   met from the front, and the one at the front faces straight out.
    --------------------------------------------------------------------- */
 const N = ORDER.length, STEP = TAU / N;
 const CAM_D = 11;                 // camera distance, in orb radii
-const CAM_EL = (29 * Math.PI) / 180;  // how far above the orbit's plane the camera sits
-const ECC = 1.0;                  // the orbit swings wide behind the orb, so the far satellite stands clear above it
+const CAM_EL = (10 * Math.PI) / 180;  // how far above the orbit's plane the camera sits: only just, for a front view
+const PLANE_Y = -0.42;            // the orbit runs below the orb's middle, so the model at the front stands on its lower half
+const ECC = 0.35;                 // the orbit swings a little wider behind the orb
 const ORB_VIS = 0.9925;           // the drawn orb's radius as a share of its element's half-size
 const POSE = { enterprise: 2.2, finance: 1.4, government: 1.1, consumer: 2.3 };  // each loop's best moment, for the still version
 const SPAN_W = 2.42, SPAN_H = 1.84; // the layer's size, in orb diameters
-const TIP_MIN = -0.95, TIP_MAX = 0.2; // how far the orbit's plane can be tipped: back to see it from below, forward a little
+const TIP_MIN = -0.6, TIP_MAX = 0.45; // how far the orbit's plane can be tipped: back to see it from below, forward to look down on it
+const SPIN_MAX = 0.8;             // how far the model at the front can be turned on its disc, to either side
 const TAKE = 0.56;                // how far towards the front a satellite must come before the hero changes over to it
 
 async function initHero(ntell) {
@@ -629,6 +637,7 @@ async function initHero(ntell) {
     dragging: false, wheeling: false, touch: false, touched: false,
     hover: -1, focus: -1,
     deploy: 0, spinIn: 0, nudge: 0, launched: false, warm: false,
+    local: false, held: 0,            // this drag began on the satellite at the front, and which one that was
     ring: 1.62, ecc: ECC, size: 0.31, s0: 1, W: 1, H: 1, shown: false, t: 0, last: 0, lastSurge: 0
   };
   // Quality steps down if frames run long: full, then standard pixel density, then no shadows, then off.
@@ -641,6 +650,7 @@ async function initHero(ntell) {
   }
   const screen = sats.map(() => ({ x: 0, y: 0, r: 0, on: false, d: 0, cur: null }));
   const hov = sats.map(() => 0);
+  const spins = sats.map(() => 0);   // each model's own turn on its disc
   const mod = (i) => ((i % N) + N) % N;
   // a circle across the front and at the sides, drawn out to a point of an egg behind the orb
   const radius = (th) => S.ring * (1 + S.ecc * Math.pow(Math.max(0, -Math.cos(th)), 1.5));
@@ -667,13 +677,12 @@ async function initHero(ntell) {
     const room = Math.min(beside ? cx - edge - 14 : cx, window.innerWidth - cx) / half;
     const compact = window.innerWidth < 860;
     S.size = compact ? 0.37 : 0.36;
-    S.ecc = compact ? -0.08 : ECC;    // on a phone the nav is up there, so the far satellite stays tucked behind the orb instead
     S.ring = clamp((room - S.size * 1.25) / 1.07, 1.36, compact ? 1.56 : 1.66);
     if (ringMesh) { rig.remove(ringMesh); ringMesh.geometry.dispose(); ringMesh.material.dispose(); }
     const px = 1 / half, pts = [];
     for (let j = 0; j < 96; j++) { const a = (j / 96) * TAU, rr = radius(a); pts.push(new THREE.Vector3(Math.sin(a) * rr, 0, Math.cos(a) * rr)); }
     ringMesh = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 240, 0.62 * px, 6, true), kit.haze(PAL.ink, 0.2));
-    ringMesh.position.y = -0.16;
+    ringMesh.position.y = PLANE_Y;
     rig.add(ringMesh);
     beads.forEach((b) => b.scale.setScalar(2.4 * px));
   }
@@ -715,16 +724,26 @@ async function initHero(ntell) {
   const step = (d) => goTo(S.index + d);
 
   let dragAt = 0;
-  signal.on('dragstart', (type) => {
+  signal.on('dragstart', (type, target) => {
     S.dragging = true; S.touched = true; S.touch = type !== 'mouse';
+    S.local = !!(target && target.closest && target.closest('.sat-hit') === hits[S.index]);
+    S.held = S.index;
     S.vel = 0; S.chain = 0; dragAt = performance.now();
   });
   signal.on('drag', (dx, dy) => {
     const r = Math.max(40, signal.pos.r);
     const now = performance.now(), dt = clamp((now - dragAt) / 1000, 0.004, 0.1);
     dragAt = now;
-    // sideways turns the orbit
-    const d = dx / (r * 0.92);
+    // On the satellite at the front, sideways turns that model on its disc. At the end of its travel, and
+    // everywhere else in the orbit, sideways turns the orbit.
+    let side = dx;
+    if (S.local && S.index !== S.held) S.local = false;   // once the orbit has moved on, the drag is the orbit's
+    if (S.local) {
+      const per = Math.max(60, r * 0.5), want = spins[S.index] + dx / per;
+      spins[S.index] = clamp(want, -SPIN_MAX, SPIN_MAX);
+      side = (want - spins[S.index]) * per;
+    }
+    const d = side / (r * 0.92);
     S.yaw += d; S.vel = lerp(S.vel, d / dt, 0.4);
     follow();
     // up and down tips it; a drag that is mostly sideways hardly tips it at all
@@ -812,7 +831,7 @@ async function initHero(ntell) {
     }
 
     const t = now;
-    const yaw = S.yaw + S.nudge + Math.sin(t * 0.45) * 0.025 - (1 - easeOut(S.spinIn)) * TAU * 0.86;
+    const yaw = S.yaw + S.nudge + Math.sin(t * 0.45) * 0.012 - (1 - easeOut(S.spinIn)) * TAU * 0.86;
     qRig.setFromEuler(e.set(S.tip, 0, -0.085));
     rig.quaternion.copy(qRig);
     up.set(0, 1, 0).applyQuaternion(qRig);
@@ -832,11 +851,14 @@ async function initHero(ntell) {
       const front = smooth(1 - Math.abs(wrapPi(th)) / STEP);
       hov[i] += (((S.hover === i || S.focus === i) ? 1 : 0) - hov[i]) * (1 - Math.exp(-dt * 10));
       const rr = radius(th) * lerp(0.3, 1, easeBack(dep, 1.2));
-      // its place on the orbit, and its own turn within the orbit's plane: tip the plane and everything on it tips too
-      v.set(Math.sin(th) * rr, -0.16 + 0.035 * Math.sin(t * 0.9 + i * 1.9) + 0.05 * front, Math.cos(th) * rr).applyQuaternion(qRig);
+      // its place on the orbit: tip the plane and everything on it tips too
+      v.set(Math.sin(th) * rr, PLANE_Y + 0.03 * Math.sin(t * 0.9 + i * 1.9) + 0.04 * front, Math.cos(th) * rr).applyQuaternion(qRig);
       s.root.position.copy(v);
       s.root.scale.setScalar(Math.max(0.0001, S.size * (0.84 + 0.36 * front) * smooth(dep) * (1 + 0.08 * hov[i])));
-      s.root.quaternion.copy(qRig).multiply(q.setFromEuler(e.set(0.06 * front, th + front * (-0.5 + 0.14 * Math.sin(t * 0.6 + i)), 0.05 * Math.sin(t * 0.7 + i * 2.1) * (1 - front))));
+      // Each model looks outward from the orb, so the one at the front faces straight out of the page. A model
+      // turned on its disc keeps that turn while it is at the front, and comes back square as it moves away.
+      if (i !== S.index && !S.warm) spins[i] *= Math.exp(-dt * 5);
+      s.root.quaternion.copy(qRig).multiply(q.setFromEuler(e.set(0.05 * front, th + spins[i], 0.04 * Math.sin(t * 0.7 + i * 2.1) * (1 - front))));
       if (s.tick) s.tick(still ? POSE[s.key] : t - s.t0);
       s.tint(front);
 
@@ -863,7 +885,7 @@ async function initHero(ntell) {
     }
     tip.classList.toggle('is-on', tipOn >= 0);
 
-    beads.forEach((b, j) => { const a = t * 0.22 + j * Math.PI + yaw, rr = radius(a); b.position.set(Math.sin(a) * rr, -0.16, Math.cos(a) * rr); b.visible = S.deploy > 0.9; });
+    beads.forEach((b, j) => { const a = t * 0.22 + j * Math.PI + yaw, rr = radius(a); b.position.set(Math.sin(a) * rr, PLANE_Y, Math.cos(a) * rr); b.visible = S.deploy > 0.9; });
     ringMesh.material.opacity = 0.2 * smooth(S.deploy * 1.4 - 0.4);
     renderer.render(scene, camera);
   }
@@ -891,7 +913,7 @@ async function initHero(ntell) {
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(rebuild);
   window.addEventListener('load', rebuild);
   if (hero) hero.onPick((i) => goTo(i));
-  ntell.satellites = { goTo, step, state: S, sats };
+  ntell.satellites = { goTo, step, state: S, sats, spins };
   document.documentElement.classList.add('sats-on');
   if (still) {
     S.launched = true; S.deploy = 1; S.spinIn = 1; S.touched = true;
