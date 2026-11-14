@@ -38,8 +38,9 @@ assets/vendor/          GSAP 3.13 (core, ScrollTrigger, SplitText), Lenis 1.3 an
 2. Who we are: one partner for AI transformation, mission and values
 3. What we do: advise, build, equip, embed
 4. Industries, one chapter each, with the capabilities and what we bring to
-   them (a solid tag names an ntell product, an outlined tag is bespoke work):
-   - Fintech and financial services (payments, core banking, fraud, risk,
+   them (a tag with a filled dot names an ntell product, one with a hollow dot
+   is bespoke work):
+   - Financial services (payments, core banking, fraud, risk,
      modelling, decisioning, reporting, data sharing, AI governance), with the
      Portfolio 360°, Model Studio and Arbiter product gallery inside it
    - Government services
