@@ -128,10 +128,20 @@ adoption dots) are left out.
   left until another satellite takes its place, and a drag that goes past the
   end of that turn carries on into turning the orbit. On a touch screen a
   drag that reaches the end of the tilt carries on into the page. A sideways
-  trackpad swipe turns the orbit too. A satellite can also be
-  clicked, tapped or reached with Tab and the arrow keys, and the list at the
-  foot of the hero picks one directly. Moving the pointer over the field bends
-  the lines only: the orb and the satellites do not react to it.
+  trackpad swipe turns the orbit too. The arrow keys turn it a satellite at a
+  time, and the list at the foot of the hero picks one directly. Moving the
+  pointer over the field bends the lines only: the orb and the satellites do
+  not react to it.
+- **Pressing a satellite**: a click or tap on a satellite gets its answer (it
+  comes to the front, or, if it is there already, its pieces rise again) and
+  then, after a moment, the page goes down to that industry's section. The
+  section is the `data-href` on that industry's paragraph in the hero. Only a
+  deliberate press goes anywhere: the pointer moved less than 6 pixels, was
+  down for less than 0.6 seconds, and the page was not scrolling under it. A
+  drag turns the orbit and never counts. A press that was held, or that only
+  stopped a scroll, gets the answer and the page stays. Taking hold of the
+  orbit again, or scrolling, before the page has set off calls it off. From
+  the keyboard, Tab to a satellite and Enter does the same.
 - **Sound and touch**: one sound for everything, a short dry tick like a
   picker wheel passing a value. It is heard when a satellite comes to the
   front and each time the orb lands on a heading's full stop; on phones that

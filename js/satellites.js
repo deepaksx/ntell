@@ -623,8 +623,10 @@ async function initHero(ntell) {
   const hits = ORDER.map((key, i) => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'sat-hit'; b.dataset.sat = key;
-    b.setAttribute('aria-label', `Show ${names[i]}`);
-    b.addEventListener('click', () => goTo(i));
+    b.setAttribute('aria-label', `Go to ${names[i]}`);
+    // A pointer's press comes through the orb's own handling (the 'tap' below), which can tell a press from a
+    // drag. This is for the keyboard, and for the still version, where a click is only ever a click.
+    b.addEventListener('click', (e) => { if (still || e.detail === 0) press(i, true); });
     b.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') S.hover = i; });
     b.addEventListener('pointerleave', () => { if (S.hover === i) S.hover = -1; });
     b.addEventListener('focus', () => { S.focus = i; });
@@ -734,8 +736,26 @@ async function initHero(ntell) {
   }
   const step = (d) => goTo(S.index + d);
 
+  // A press on a satellite: it answers as it always has (it comes to the front, or, if it is there already,
+  // its pieces rise again), and then the page goes down to that industry's own section. Only a press that
+  // was plainly meant goes anywhere: short, still, and not made while the page was scrolling. A drag never
+  // reaches here at all. A press that was held, or that only stopped a scroll, gets the answer and stays.
+  const HOLD = 600;                 // milliseconds: longer than this is a hold, not a press
+  let visitT = 0;
+  const stay = () => clearTimeout(visitT);
+  function press(i, meant) {
+    stay();
+    if (i === S.index) { if (!still) sats[i].play(); } else goTo(i);
+    if (!meant || !hero || !hero.visit) return;
+    // a moment first, so the answer is seen before the page moves
+    if (still) hero.visit(i); else visitT = setTimeout(() => hero.visit(i), 450);
+  }
+  // taking hold of the orbit again, or scrolling by hand, calls the journey off
+  window.addEventListener('wheel', stay, { passive: true });
+
   let dragAt = 0;
   signal.on('dragstart', (type, target) => {
+    stay();
     S.dragging = true; S.touched = true; S.touch = type !== 'mouse';
     S.local = !!(target && target.closest && target.closest('.sat-hit') === hits[S.index]);
     S.held = S.index;
@@ -784,11 +804,11 @@ async function initHero(ntell) {
     S.chain = 0;
   });
   // a tap that lands on a satellite brings it round; anything else is the orb's
-  signal.on('tap', (x, y) => {
+  signal.on('tap', (x, y, how) => {
     let best = -1, bd = 1e9;
     screen.forEach((p, i) => { if (!p.on) return; const d = Math.hypot(x - p.x, y - p.y); if (d < p.r * 1.15 && d < bd) { bd = d; best = i; } });
     if (best < 0) return false;
-    if (best === S.index) sats[best].play(); else goTo(best);
+    press(best, !!how && how.held < HOLD && !how.scrolled);
     return true;
   });
   stage.addEventListener('keydown', (e) => {

@@ -216,13 +216,13 @@
       node, mode: node.dataset.orb || 'rail',
       k: node.classList.contains('dot') ? 1.5 : 1
     }));
-    const st = { on: false, pop: 1, lx: null, ly: 0, ls: 0, dockedAt: -1, section: '', t: 0, stageU: 0 };
+    const st = { on: false, pop: 1, lx: null, ly: 0, ls: 0, dsy: 0, dockedAt: -1, section: '', t: 0, stageU: 0 };
     const pos = { x: 0, y: 0, r: 0, live: false, home: 1 };
-    const drag = { on: false, orbit: false, x: 0, y: 0, vx: 0, vy: 0, moved: 0, used: false };
+    const drag = { on: false, orbit: false, x: 0, y: 0, vx: 0, vy: 0, moved: 0, used: false, t0: 0, sy: 0, rolling: false };
     let onTap = null;
     // the satellites (js/satellites.js) listen in on the orb: when it starts, and how it is being dragged
     const subs = {};
-    const emit = (name, a, b) => { let res; (subs[name] || []).forEach((fn) => { const r = fn(a, b); if (r) res = r; }); return res; };
+    const emit = (name, a, b, c) => { let res; (subs[name] || []).forEach((fn) => { const r = fn(a, b, c); if (r) res = r; }); return res; };
     // where a sticky heading rests, read once per layout
     const sticks = new Map();
     window.addEventListener('resize', () => sticks.clear());
@@ -238,6 +238,9 @@
       stage.addEventListener('pointerdown', (e) => {
         if (!st.on || st.stageU > 0.3) return;
         drag.on = true; drag.x = e.clientX; drag.y = e.clientY; drag.vx = 0; drag.vy = 0; drag.moved = 0;
+        // noted for whoever must tell a press from a drag or a scroll: when it began, and whether the page was moving
+        // (moving: it went more than a couple of pixels in the last frame, or has since)
+        drag.t0 = performance.now(); drag.sy = window.scrollY; drag.rolling = st.dsy > 2 || Math.abs(drag.sy - st.ls) > 2;
         drag.orbit = !!(subs.drag && e.target.closest && e.target.closest('.sat-hit, .hero__orbit'));
         try { stage.setPointerCapture(e.pointerId); } catch (err) { /* capture is a nicety */ }
         stage.classList.add('is-dragging');
@@ -257,10 +260,12 @@
         drag.on = false; stage.classList.remove('is-dragging');
         // a cancelled touch means the page took the gesture to scroll: that is not a tap
         const tap = e.type === 'pointerup' && drag.moved < 6;
-        if (drag.orbit) { drag.orbit = false; emit('release'); if (tap) emit('tap', e.clientX, e.clientY); return; }
+        // how the tap was made: how long it was held, and whether the page was scrolling under it
+        const how = { held: performance.now() - drag.t0, scrolled: drag.rolling || Math.abs(window.scrollY - drag.sy) > 2 };
+        if (drag.orbit) { drag.orbit = false; emit('release'); if (tap) emit('tap', e.clientX, e.clientY, how); return; }
         if (tap) { drag.vx = 0; drag.vy = 0; }
         // a tap that lands on a satellite belongs to the satellite, not to the orb
-        if (tap && !emit('tap', e.clientX, e.clientY) && onTap) { onTap(pos.x, pos.y); orb.spin([0.2, 1, 0.1], 0.5); }
+        if (tap && !emit('tap', e.clientX, e.clientY, how) && onTap) { onTap(pos.x, pos.y); orb.spin([0.2, 1, 0.1], 0.5); }
       };
       stage.addEventListener('pointerup', end);
       stage.addEventListener('pointercancel', end);
@@ -335,6 +340,7 @@
       // roll: with the scroll always, with any sideways travel, and with whatever spin a drag left behind
       const radius = Math.max(p.s / 2, 64);
       if (st.lx !== null) orb.roll((p.x - st.lx) * 0.9, sy - st.ls, radius);
+      st.dsy = st.lx === null ? 0 : Math.abs(sy - st.ls);   // how far the page moved this frame
       st.lx = p.x; st.ly = p.y; st.ls = sy;
       const coasting = Math.abs(drag.vx) + Math.abs(drag.vy) > 0.08;
       if (!held && coasting) { orb.roll(drag.vx, drag.vy, Math.max(p.s * 0.3, 40)); drag.vx *= 0.955; drag.vy *= 0.955; }
@@ -571,6 +577,8 @@
     return {
       items, show,
       get index() { return cur; },
+      // go down the page to an industry's own section (a press on its satellite does this)
+      visit(i) { const it = items[i], target = it && it.href ? $(it.href) : null; if (target) scrollToTarget(target, -56); },
       // the satellites take over choosing: they turn first, and call show() as each one arrives
       onPick(fn) { pick = fn; }
     };
