@@ -37,20 +37,21 @@ assets/vendor/          GSAP 3.13 (core, ScrollTrigger, SplitText), Lenis 1.3 an
    brings the next satellite to the front, and the headline and text follow it
 2. Who we are: one partner for AI transformation, mission and values
 3. What we do: advise, build, equip, embed
-4. Industries, one chapter each, with the capabilities and what we bring to
+4. What is changing, then what is missing and what it takes
+5. How we work: bespoke deployment, strategic partnership, change management
+6. How we engage: five stages
+7. How we deliver, and where we operate
+8. Industries, one chapter each, with the capabilities and what we bring to
    them (a tag with a filled dot names an ntell product, one with a hollow dot
    is bespoke work):
    - Financial services (payments, core banking, fraud, risk,
      modelling, decisioning, reporting, data sharing, AI governance), with the
-     Portfolio 360°, Model Studio and Arbiter product gallery inside it
+     Portfolio 360°, Model Studio and Arbiter gallery inside it, shown as some
+     of our deployments
    - Government services
    - FMCG and consumer
    - M&A and value creation
    - AI transformation
-5. What is changing, and the gap
-6. How we work: bespoke deployment, strategic partnership, change management
-7. How we engage: five stages
-8. How we deliver, and where we operate
 9. Who builds it, and contact
 
 ## Design language
@@ -144,8 +145,11 @@ adoption dots) are left out.
   the keyboard, Tab to a satellite and Enter does the same.
 - **Sound and touch**: one sound for everything, a short dry tick like a
   picker wheel passing a value. It is heard when a satellite comes to the
-  front and each time the orb lands on a heading's full stop; on phones that
-  support it the tick is felt as well. It is synthesised in `js/main.js` (no
+  front and each time the orb lands on a heading's full stop as the reader
+  scrolls; on phones that support it the tick is felt as well. When a link or
+  a press takes the page somewhere, the orb passes many headings on the way;
+  that journey makes one tick only: as it arrives, or, for a press on a
+  satellite, at the press and none after. It is synthesised in `js/main.js` (no
   audio files) and is identical every time. Browsers only allow sound after a
   first tap, click or key press. The speaker button in the nav turns it all
   off and the choice is remembered.
@@ -176,7 +180,7 @@ less"), and nothing in it applies to wider screens.
 - **The product gallery** is three cards side by side, swiped sideways.
 - **The industry links** are one line that scrolls sideways.
 - **Hidden on a phone**: the sentences under the four values, the sub-lists in
-  What we do and in Contact, the struck-through lines in The gap, the
+  What we do and in Contact, the struck-through lines in What it takes, the
   descriptions in What sets us apart, the three steps inside each stage of How
   we engage, the sentences under "you own it all" and under each place, the two
   paragraphs in Who builds it, and the second copy of the email address. To

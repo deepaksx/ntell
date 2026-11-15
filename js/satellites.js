@@ -745,7 +745,9 @@ async function initHero(ntell) {
   const stay = () => clearTimeout(visitT);
   function press(i, meant) {
     stay();
-    if (i === S.index) { if (!still) sats[i].play(); } else goTo(i);
+    // one tick for a press, whichever satellite it lands on: coming to the front makes it, and the one that
+    // is there already is given it here. The journey that follows is silent.
+    if (i === S.index) { if (!still) sats[i].play(); if (ntell.fx) ntell.fx.tick(); } else goTo(i);
     if (!meant || !hero || !hero.visit) return;
     // a moment first, so the answer is seen before the page moves
     if (still) hero.visit(i); else visitT = setTimeout(() => hero.visit(i), 450);

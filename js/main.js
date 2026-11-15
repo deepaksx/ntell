@@ -39,8 +39,26 @@
     gsap.ticker.add((t) => lenis.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);
   }
-  const scrollToTarget = (target, offset = 0) => {
-    if (lenis) lenis.scrollTo(target, { offset, duration: 1.5 });
+  // A journey is the page being taken somewhere by a link or a press, and not by the reader's own scrolling.
+  // On the way the orb passes every heading in between, and it would tick at each of them. A journey makes
+  // one tick instead: as it arrives, or none if whatever began it has ticked already (a press on a satellite
+  // has). A reader who scrolls hears every stop as before.
+  // Whether a journey is under way is read from the scroller: it is, while the scroll this code started is
+  // still the one running. A reader who takes over with wheel or finger ends that scroll, and so the journey.
+  const travel = {
+    quiet: false, tick: null, until: 0,
+    get on() { return !!(lenis && lenis.isScrolling === 'smooth' && lenis.userData && lenis.userData.journey) || performance.now() < this.until; },
+    // the orb may settle on the heading it has come to in the same moment: that stop is the journey's too
+    arrive() { this.until = performance.now() + 300; if (!this.quiet && this.tick) this.tick(); }
+  };
+  const scrollToTarget = (target, offset = 0, quiet = false) => {
+    if (lenis) {
+      // a long way takes a little longer, so the page is not a blur on the way to its last sections
+      const to = target === 0 ? 0 : target.getBoundingClientRect().top + window.scrollY + offset;
+      const duration = Math.min(2.2, Math.max(1.5, 1.1 + Math.abs(to - window.scrollY) / 9000));
+      travel.quiet = !!quiet;
+      lenis.scrollTo(target, { offset, duration, userData: { journey: true }, onComplete: () => travel.arrive() });
+    }
     else if (target === 0) window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
     else target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   };
@@ -578,7 +596,7 @@
       items, show,
       get index() { return cur; },
       // go down the page to an industry's own section (a press on its satellite does this)
-      visit(i) { const it = items[i], target = it && it.href ? $(it.href) : null; if (target) scrollToTarget(target, -56); },
+      visit(i) { const it = items[i], target = it && it.href ? $(it.href) : null; if (target) scrollToTarget(target, -56, true); },
       // the satellites take over choosing: they turn first, and call show() as each one arrives
       onPick(fn) { pick = fn; }
     };
@@ -1513,7 +1531,9 @@
     const flow = createFlow($('#flowCanvas'), signal.pos);
     const fx = createFeedback();
     signal.onTap((x, y) => { flow.surge(x, y); fx.tick(); });
-    signal.on('dock', () => fx.tick());
+    // the orb landing on a heading's full stop, while the reader scrolls (a journey makes its own one tick)
+    signal.on('dock', () => { if (!travel.on) fx.tick(); });
+    travel.tick = () => fx.tick();
     const hero = createHeroCopy(fx);
     // what js/satellites.js needs to join in
     window.ntell = { reduce, signal, flow, hero, fx, lenis };
@@ -1539,15 +1559,15 @@
     // sections are initialised top to bottom so pinned scenes measure correctly
     initAbout();
     initWhat();
-    initRowTaps();
-    initIndustries();
-    initWork();
-    initIndustriesRest();
     initShift();
     initGap();
     initBring();
     initEngage();
     initDeliver();
+    initRowTaps();
+    initIndustries();
+    initWork();
+    initIndustriesRest();
     initWho();
     initContact();
     initFooter();

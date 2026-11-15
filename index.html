@@ -102,9 +102,9 @@
     <nav class="nav__links" aria-label="Primary">
       <a href="#about">About</a>
       <a href="#what">What we do</a>
-      <a href="#industries">Industries</a>
       <a href="#approach">How we work</a>
       <a href="#engage">How we engage</a>
+      <a href="#industries">Industries</a>
     </nav>
     <button class="nav__sound" id="soundToggle" type="button" aria-pressed="true" aria-label="Sound and touch feedback" title="Sound on">
       <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.4 7.9h2.5l3.6-2.9v10l-3.6-2.9H3.4z"/><path class="on" d="M12.3 7.6a3.4 3.4 0 0 1 0 4.8M14.5 5.5a6.4 6.4 0 0 1 0 9"/><path class="off" d="M12.6 7.9l4.2 4.2M16.8 7.9l-4.2 4.2"/></svg>
@@ -118,9 +118,9 @@
   <nav class="menu__links" aria-label="Mobile">
     <a href="#about">About</a>
     <a href="#what">What we do</a>
-    <a href="#industries">Industries</a>
     <a href="#approach">How we work</a>
     <a href="#engage">How we engage</a>
+    <a href="#industries">Industries</a>
     <a href="#contact"><em>Start a conversation</em></a>
   </nav>
   <p class="menu__foot cap">contact@ntell.ai</p>
@@ -230,7 +230,255 @@
   </div>
 </section>
 
-<!-- 04 · INDUSTRIES -->
+<!-- 04 · WHAT IS CHANGING -->
+<section class="shift" id="shift" data-rail="What is changing">
+  <div class="shift__stage">
+    <div class="wrap shift__grid">
+      <div class="shift__copy">
+        <p class="label" data-reveal>What is changing</p>
+        <h2 class="h2" data-lines>Companies are shifting <em>to small teams amplified by AI</em><i class="dot" data-orb></i></h2>
+        <p class="body shift__body" data-reveal>AI now does real work at every stage of a process, inside the right controls. Organisations that rebuild around AI move faster and carry less cost. Organisations that add AI to old workflows mostly stay where they were.</p>
+        <div class="shift__states" aria-live="off">
+          <p class="shift__state is-on" data-state="a"><span class="cap">Today</span>Many layers. Slow and expensive.</p>
+          <p class="shift__state" data-state="b"><span class="cap">Next</span>Small, exceptional teams, amplified by AI.</p>
+        </div>
+      </div>
+      <div class="shift__viz">
+        <canvas id="shiftCanvas" role="img" aria-label="An organisation chart with many layers reorganises into a few small teams, each working with a ring of AI agents."></canvas>
+        <ul class="shift__legend cap" aria-hidden="true">
+          <li><i class="lg lg--gen"></i>Generalists</li>
+          <li><i class="lg lg--spec"></i>Specialists</li>
+          <li><i class="lg lg--agent"></i>AI agents</li>
+        </ul>
+      </div>
+    </div>
+    <div class="wrap">
+      <p class="shift__formula"><span>Small, exceptional teams <b>×</b> AI leverage</span> <b class="gt">&gt;</b> <span>large teams <b>×</b> manual process.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- 05 · WHAT IS MISSING, AND WHAT IT TAKES -->
+<section class="gap" id="gap" data-rail="What is missing">
+  <div class="wrap">
+    <p class="label" data-reveal>What is missing</p>
+    <p class="manifesto" id="manifesto">Almost every enterprise has AI <em>in the plan.</em> Very few have it <em>in their results.</em> The technology is ready. What is missing is the work of building it into the systems, decisions and habits of each organisation<i class="dot" data-orb></i></p>
+
+    <div class="takes">
+      <p class="label takes__label" data-reveal>What it takes</p>
+      <ol class="takes__list">
+        <li class="take">
+          <h3 class="take__title">Go deep into your context</h3>
+          <p class="take__body">Workflows designed around how your teams really work, exceptions included.</p>
+          <p class="take__not"><span class="cap">Not</span> <s>choosing a tool first, then bending the work around it</s></p>
+        </li>
+        <li class="take">
+          <h3 class="take__title">Size the value before the build</h3>
+          <p class="take__body">Every opportunity measured in your own numbers and tied to a business outcome.</p>
+          <p class="take__not"><span class="cap">Not</span> <s>solving problems where the value never shows up</s></p>
+        </li>
+        <li class="take">
+          <h3 class="take__title">Treat adoption as the job</h3>
+          <p class="take__body">Change management that links daily use to incentives and to results.</p>
+          <p class="take__not"><span class="cap">Not</span> <s>calling go-live the finish line</s></p>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- 06 · HOW WE WORK -->
+<section class="bring" id="approach" data-rail="How we work">
+  <div class="wrap bring__head">
+    <p class="label" data-reveal>How we work</p>
+    <h2 class="h2" data-lines>One team, from diagnosis <em>to results you can verify</em><i class="dot" data-orb></i></h2>
+    <p class="body bring__lede" data-reveal>Strategy, engineering and change management in a single team that works inside your organisation, not alongside it.</p>
+  </div>
+
+  <div class="wrap stack" id="stack">
+    <article class="pillar" style="--i:0">
+      <div class="pillar__main">
+        <p class="pillar__tag cap">Deploy</p>
+        <h3 class="pillar__title">Bespoke deployment</h3>
+        <p class="pillar__line">Built on site, so the solution fits the real work from day one.</p>
+      </div>
+      <ul class="pillar__list">
+        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Forward-deployed with your teams</li>
+        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Built inside your live systems</li>
+        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Handles the real exceptions</li>
+      </ul>
+      <div class="pillar__art" aria-hidden="true">
+        <svg class="art art--fit" viewBox="0 0 220 220">
+          <g class="art__grid" fill="none" stroke="var(--line-2)" stroke-width="1.5">
+            <rect x="20" y="20" width="56" height="56" rx="12"/><rect x="82" y="20" width="56" height="56" rx="12"/><rect x="144" y="20" width="56" height="56" rx="12"/>
+            <rect x="20" y="82" width="56" height="56" rx="12"/><rect x="144" y="82" width="56" height="56" rx="12"/>
+            <rect x="20" y="144" width="56" height="56" rx="12"/><rect x="82" y="144" width="56" height="56" rx="12"/><rect x="144" y="144" width="56" height="56" rx="12"/>
+          </g>
+          <rect class="art__slot" x="82" y="82" width="56" height="56" rx="12" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 5"/>
+          <g class="art__piece"><rect x="82" y="82" width="56" height="56" rx="12" fill="var(--accent)"/><path d="M100 110l7 7 13-14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+        </svg>
+      </div>
+    </article>
+
+    <article class="pillar" style="--i:1">
+      <div class="pillar__main">
+        <p class="pillar__tag cap">Partner</p>
+        <h3 class="pillar__title">Strategic partnership</h3>
+        <p class="pillar__line">Aligned to the outcomes your business is run on.</p>
+      </div>
+      <ul class="pillar__list">
+        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Use cases chosen by outcome</li>
+        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Roadmap co-owned with your leadership</li>
+        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Business case agreed with Finance</li>
+      </ul>
+      <div class="pillar__art" aria-hidden="true">
+        <svg class="art art--align" viewBox="0 0 220 220">
+          <path class="art__path art__path--a" d="M18 52C70 52 78 110 128 110H166" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          <path class="art__path art__path--b" d="M18 168C70 168 78 110 128 110H166" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="18" cy="52" r="6" fill="var(--accent)"/><circle cx="18" cy="168" r="6" fill="var(--ink)"/>
+          <g class="art__target"><circle cx="186" cy="110" r="19" fill="var(--card)" stroke="var(--accent)" stroke-width="3"/><circle cx="186" cy="110" r="6.5" fill="var(--accent)"/></g>
+        </svg>
+      </div>
+    </article>
+
+    <article class="pillar" style="--i:2">
+      <div class="pillar__main">
+        <p class="pillar__tag cap">Adopt</p>
+        <h3 class="pillar__title">Change management</h3>
+        <p class="pillar__line">We stay until the outcome is achieved.</p>
+      </div>
+      <ul class="pillar__list">
+        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Adoption tracked with your leadership</li>
+        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Incentives aligned to results</li>
+        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Your teams trained to run it</li>
+      </ul>
+      <div class="pillar__art" aria-hidden="true">
+        <svg class="art art--adopt" viewBox="0 0 220 220"><g class="art__dots"></g></svg>
+      </div>
+    </article>
+
+    <article class="pillar pillar--ink" style="--i:3">
+      <div class="pillar__main">
+        <p class="pillar__tag cap">Regulated, explainable, outcome-led</p>
+        <h3 class="pillar__title">What sets us <em>apart</em></h3>
+        <p class="pillar__line">Designed for organisations that need AI to work inside real regulatory and operational constraints.</p>
+      </div>
+      <ul class="apart">
+        <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>AI-native from day one</b><span>founded in the AI era, not retrofitted</span></div></li>
+        <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>Regulation-aware</b><span>controls are designed in, not added afterwards</span></div></li>
+        <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>Small senior teams</b><span>the people who scope the work are the people who build it</span></div></li>
+        <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>Outcome-focused</b><span>we are measured on the result, not on the hours</span></div></li>
+        <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>Fast time to value</b><span>shipping in weeks, improving every week</span></div></li>
+        <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>No lock-in</b><span>built on your stack, and yours to run without us</span></div></li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<!-- 07 · HOW WE ENGAGE -->
+<section class="engage" id="engage" data-rail="How we engage">
+  <div class="wrap engage__grid">
+    <div class="engage__head">
+      <p class="label" data-reveal>How we engage</p>
+      <h2 class="h2" data-lines>Five stages. <em>You know what you get at each one.</em></h2>
+      <p class="body" data-reveal>We agree scope and success measures first, and tie them to a business result. Management decides at the end of each stage. No stage starts until you sign off the stage before.</p>
+    </div>
+
+    <ol class="gates" id="gates">
+      <li class="gates__spine" aria-hidden="true"><i id="gatesFill"></i></li>
+      <li class="gate">
+        <i class="gate__node" data-orb="direct-start"></i>
+        <p class="gate__k cap">Stage 1</p>
+        <h3 class="gate__title">Discover</h3>
+        <p class="gate__q">Understand the decision, the data and the constraints.</p>
+        <ul class="gate__do"><li>Map systems, data and workflows</li><li>Baseline the KPIs on your own numbers</li><li>Agree scope and success measures</li></ul>
+        <p class="gate__out"><span class="cap">You get</span>A decision brief</p>
+      </li>
+      <li class="gate">
+        <i class="gate__node" data-orb="direct"></i>
+        <p class="gate__k cap">Stage 2</p>
+        <h3 class="gate__title">Design</h3>
+        <p class="gate__q">Shape the product or solution, and its controls.</p>
+        <ul class="gate__do"><li>Read the systems and logs, not only the workshops</li><li>Co-design the target workflow with your teams</li><li>Design the controls in from the start</li></ul>
+        <p class="gate__out"><span class="cap">You get</span>A solution and control design</p>
+      </li>
+      <li class="gate">
+        <i class="gate__node" data-orb="direct"></i>
+        <p class="gate__k cap">Stage 3</p>
+        <h3 class="gate__title">Build</h3>
+        <p class="gate__q">Develop, integrate and test with your team.</p>
+        <ul class="gate__do"><li>Build inside your live systems</li><li>Backtest on history before go-live</li><li>Release every week, shaped by the users</li></ul>
+        <p class="gate__out"><span class="cap">You get</span>A working, integrated product</p>
+      </li>
+      <li class="gate">
+        <i class="gate__node" data-orb="direct"></i>
+        <p class="gate__k cap">Stage 4</p>
+        <h3 class="gate__title">Launch</h3>
+        <p class="gate__q">Go live, with security and compliance signed off.</p>
+        <ul class="gate__do"><li>Shadow mode first, then a staged rollout</li><li>Security and compliance sign-off</li><li>Train the teams that will run it</li></ul>
+        <p class="gate__out"><span class="cap">You get</span>A signed-off go-live</p>
+      </li>
+      <li class="gate">
+        <i class="gate__node" data-orb="direct"></i>
+        <p class="gate__k cap">Stage 5</p>
+        <h3 class="gate__title">Evolve</h3>
+        <p class="gate__q">Monitor, improve and extend what is in production.</p>
+        <ul class="gate__do"><li>Track adoption and value, with an owner per metric</li><li>Extend to more products, teams and entities</li><li>Hand over code and runbooks to your team</li></ul>
+        <p class="gate__out"><span class="cap">You get</span>A monitored, improving service</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- 08 · HOW WE DELIVER, WHERE WE OPERATE -->
+<section class="deliver" id="deliver" data-rail="How we deliver">
+  <div class="wrap">
+    <div class="deliver__head">
+      <p class="label" data-reveal>How we deliver</p>
+      <h2 class="h2" data-lines>On your cloud or on-prem. <em>Your data stays with you</em><i class="dot" data-orb></i></h2>
+    </div>
+    <div class="deliver__grid">
+      <div class="mode" data-reveal>
+        <h3>On cloud</h3>
+        <ul><li>In your own cloud account and region</li><li>Data stays inside your tenancy</li></ul>
+      </div>
+      <div class="mode mode--strong" data-reveal>
+        <h3>On-prem <span class="pill pill--solid">Most control</span></h3>
+        <ul><li><b>Fully gated:</b> every link passes your gates</li><li><b>Air-gapped:</b> no outside network, updates arrive offline</li><li><b>Your servers,</b> in your own data centre</li></ul>
+      </div>
+    </div>
+    <p class="label deliver__own" data-reveal>In both, you own it all</p>
+    <ul class="owns">
+      <li><b>Your models</b><span>LLMs and ML models run in your environment.</span></li>
+      <li><b>Your context</b><span>Prompts, policies and knowledge stay in your systems.</span></li>
+      <li><b>Your data</b><span>Data stays inside your organisation at every step.</span></li>
+      <li><b>Your IP</b><span>Code, models and runbooks are yours to keep.</span></li>
+    </ul>
+
+    <div class="where" id="where">
+      <div class="split-head">
+        <div>
+          <p class="label" data-reveal>Where we operate</p>
+          <h3 class="h2 h2--sm" data-lines>Headquartered in Dubai, <em>growing region by region.</em></h3>
+        </div>
+        <p class="body" data-reveal>Dubai is home to leadership, product and engineering. Its time zone reaches the Gulf, Europe, Africa and Asia in one working day. The branches below are planned. We will announce each one when it opens.</p>
+      </div>
+      <div class="arc" aria-hidden="true">
+        <svg viewBox="0 0 1000 80" preserveAspectRatio="none"><path id="arcPath" d="M100 62 C 300 6, 700 6, 900 62" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>
+        <i style="--x:10;--y:77.5"></i><i style="--x:30;--y:36"></i><i class="is-hq" style="--x:50;--y:25"></i><i style="--x:70;--y:36"></i><i style="--x:90;--y:77.5"></i>
+      </div>
+      <ul class="places">
+        <li class="place"><h4>United Kingdom</h4><p class="cap">Planned branch</p><p>European gateway, with access to the UK financial-services ecosystem.</p></li>
+        <li class="place"><h4>Iraq</h4><p class="cap">Planned branch</p><p>Local presence for the Iraqi banking and enterprise sector.</p></li>
+        <li class="place place--hq"><h4>Dubai, UAE</h4><p class="cap">Headquarters</p><p>Strategy, product, engineering and partnerships, and in-country presence for UAE institutions.</p></li>
+        <li class="place"><h4>Singapore</h4><p class="cap">Planned branch</p><p>South-East Asia hub for AI partnerships.</p></li>
+        <li class="place"><h4>APAC</h4><p class="cap">Target region</p><p>Wider Asia-Pacific market development and delivery.</p></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 09 · INDUSTRIES -->
 <section class="inds" id="industries" data-rail="Industries">
   <div class="wrap">
     <div class="split-head">
@@ -258,7 +506,7 @@
         <h3 class="chapter__title" data-lines>Financial services<i class="dot" data-orb></i></h3>
         <p class="chapter__line" data-reveal>Built around your data, your rules and your people.</p>
         <p class="body" data-reveal>We build the platforms, models and decision systems behind payments and risk. They run on your cloud or on-prem.</p>
-        <a class="link" href="#work" data-reveal><span>See the risk suite at work</span><svg viewBox="0 0 20 20"><use href="#i-arrow"/></svg></a>
+        <a class="link" href="#work" data-reveal><span>See some of our deployments</span><svg viewBox="0 0 20 20"><use href="#i-arrow"/></svg></a>
       </header>
       <ul class="rows">
         <li class="row"><h4>Payments</h4><p>Real-time and cross-border payments. Each transaction gets a risk and credit score.</p><span class="tag">ntell SPRINT</span></li>
@@ -275,8 +523,8 @@
 
     <div class="suite" id="work">
       <div class="wrap suite__head">
-        <p class="label" data-reveal>Inside the risk suite</p>
-        <h3 class="h2 h2--sm" data-lines>Three products on one data layer, <em>working as one loop.</em></h3>
+        <p class="label" data-reveal>Some of our deployments</p>
+        <h3 class="h2 h2--sm" data-lines>Three products we have deployed on one data layer, <em>working as one loop.</em></h3>
         <p class="suite__note" data-reveal>The screens below are illustrative and run on demo data. The figures are not client results.</p>
       </div>
 
@@ -285,7 +533,7 @@
 
           <article class="prod prod--p360" data-prod>
             <div class="prod__info">
-              <p class="prod__k cap">Product 01 · Risk intelligence</p>
+              <p class="prod__k cap">Deployment 01 · Risk intelligence</p>
               <h3 class="prod__name"><svg class="prod__icon" viewBox="0 0 32 32"><use href="#i-p360"/></svg><span>Portfolio <em>360°</em></span></h3>
               <p class="prod__line">A senior risk analyst, always in your pocket.</p>
               <p class="prod__body">The whole book in one view, before and after origination. AVA, the analyst agent, finds the cause behind a number and shows how.</p>
@@ -324,7 +572,7 @@
 
           <article class="prod prod--ms" data-prod>
             <div class="prod__info">
-              <p class="prod__k cap">Product 02 · Business operations</p>
+              <p class="prod__k cap">Deployment 02 · Business operations</p>
               <h3 class="prod__name"><svg class="prod__icon" viewBox="0 0 32 32"><use href="#i-ms"/></svg><span>Model Studio</span></h3>
               <p class="prod__line">Build, test, deploy and govern every model in-house, on your own data.</p>
               <p class="prod__body">One low-code studio, from data to champion model. It monitors every live model for drift, and retrains under governance your regulator can test.</p>
@@ -371,7 +619,7 @@
 
           <article class="prod prod--arb" data-prod>
             <div class="prod__info">
-              <p class="prod__k cap">Product 03 · Credit operations</p>
+              <p class="prod__k cap">Deployment 03 · Credit operations</p>
               <h3 class="prod__name"><svg class="prod__icon" viewBox="0 0 32 32"><use href="#i-arb"/></svg><span>Arbiter</span></h3>
               <p class="prod__line">One decision engine for every risk decision the bank makes.</p>
               <p class="prod__body">Risk teams build, test and ship policy as a flow. No code, no IT queue. Arbiter versions and backtests every change, and a second person approves it.</p>
@@ -506,254 +754,6 @@
       </ul>
     </div>
   </article>
-</section>
-
-<!-- 05 · THE SHIFT -->
-<section class="shift" id="shift" data-rail="What is changing">
-  <div class="shift__stage">
-    <div class="wrap shift__grid">
-      <div class="shift__copy">
-        <p class="label" data-reveal>What is changing</p>
-        <h2 class="h2" data-lines>Companies are shifting <em>to small teams amplified by AI</em><i class="dot" data-orb></i></h2>
-        <p class="body shift__body" data-reveal>AI now does real work at every stage of a process, inside the right controls. Organisations that rebuild around AI move faster and carry less cost. Organisations that add AI to old workflows mostly stay where they were.</p>
-        <div class="shift__states" aria-live="off">
-          <p class="shift__state is-on" data-state="a"><span class="cap">Today</span>Many layers. Slow and expensive.</p>
-          <p class="shift__state" data-state="b"><span class="cap">Next</span>Small, exceptional teams, amplified by AI.</p>
-        </div>
-      </div>
-      <div class="shift__viz">
-        <canvas id="shiftCanvas" role="img" aria-label="An organisation chart with many layers reorganises into a few small teams, each working with a ring of AI agents."></canvas>
-        <ul class="shift__legend cap" aria-hidden="true">
-          <li><i class="lg lg--gen"></i>Generalists</li>
-          <li><i class="lg lg--spec"></i>Specialists</li>
-          <li><i class="lg lg--agent"></i>AI agents</li>
-        </ul>
-      </div>
-    </div>
-    <div class="wrap">
-      <p class="shift__formula"><span>Small, exceptional teams <b>×</b> AI leverage</span> <b class="gt">&gt;</b> <span>large teams <b>×</b> manual process.</span></p>
-    </div>
-  </div>
-</section>
-
-<!-- 06 · THE GAP -->
-<section class="gap" id="gap" data-rail="The gap">
-  <div class="wrap">
-    <p class="label" data-reveal>The gap</p>
-    <p class="manifesto" id="manifesto">Almost every enterprise has AI <em>in the plan.</em> Very few have it <em>in their results.</em> The technology is ready. What is missing is the work of building it into the systems, decisions and habits of each organisation<i class="dot" data-orb></i></p>
-
-    <div class="takes">
-      <p class="label takes__label" data-reveal>What it takes</p>
-      <ol class="takes__list">
-        <li class="take">
-          <h3 class="take__title">Go deep into your context</h3>
-          <p class="take__body">Workflows designed around how your teams really work, exceptions included.</p>
-          <p class="take__not"><span class="cap">Not</span> <s>choosing a tool first, then bending the work around it</s></p>
-        </li>
-        <li class="take">
-          <h3 class="take__title">Size the value before the build</h3>
-          <p class="take__body">Every opportunity measured in your own numbers and tied to a business outcome.</p>
-          <p class="take__not"><span class="cap">Not</span> <s>solving problems where the value never shows up</s></p>
-        </li>
-        <li class="take">
-          <h3 class="take__title">Treat adoption as the job</h3>
-          <p class="take__body">Change management that links daily use to incentives and to results.</p>
-          <p class="take__not"><span class="cap">Not</span> <s>calling go-live the finish line</s></p>
-        </li>
-      </ol>
-    </div>
-  </div>
-</section>
-
-<!-- 07 · HOW WE WORK -->
-<section class="bring" id="approach" data-rail="How we work">
-  <div class="wrap bring__head">
-    <p class="label" data-reveal>How we work</p>
-    <h2 class="h2" data-lines>One team, from diagnosis <em>to results you can verify</em><i class="dot" data-orb></i></h2>
-    <p class="body bring__lede" data-reveal>Strategy, engineering and change management in a single team that works inside your organisation, not alongside it.</p>
-  </div>
-
-  <div class="wrap stack" id="stack">
-    <article class="pillar" style="--i:0">
-      <div class="pillar__main">
-        <p class="pillar__tag cap">Deploy</p>
-        <h3 class="pillar__title">Bespoke deployment</h3>
-        <p class="pillar__line">Built on site, so the solution fits the real work from day one.</p>
-      </div>
-      <ul class="pillar__list">
-        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Forward-deployed with your teams</li>
-        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Built inside your live systems</li>
-        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Handles the real exceptions</li>
-      </ul>
-      <div class="pillar__art" aria-hidden="true">
-        <svg class="art art--fit" viewBox="0 0 220 220">
-          <g class="art__grid" fill="none" stroke="var(--line-2)" stroke-width="1.5">
-            <rect x="20" y="20" width="56" height="56" rx="12"/><rect x="82" y="20" width="56" height="56" rx="12"/><rect x="144" y="20" width="56" height="56" rx="12"/>
-            <rect x="20" y="82" width="56" height="56" rx="12"/><rect x="144" y="82" width="56" height="56" rx="12"/>
-            <rect x="20" y="144" width="56" height="56" rx="12"/><rect x="82" y="144" width="56" height="56" rx="12"/><rect x="144" y="144" width="56" height="56" rx="12"/>
-          </g>
-          <rect class="art__slot" x="82" y="82" width="56" height="56" rx="12" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 5"/>
-          <g class="art__piece"><rect x="82" y="82" width="56" height="56" rx="12" fill="var(--accent)"/><path d="M100 110l7 7 13-14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
-        </svg>
-      </div>
-    </article>
-
-    <article class="pillar" style="--i:1">
-      <div class="pillar__main">
-        <p class="pillar__tag cap">Partner</p>
-        <h3 class="pillar__title">Strategic partnership</h3>
-        <p class="pillar__line">Aligned to the outcomes your business is run on.</p>
-      </div>
-      <ul class="pillar__list">
-        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Use cases chosen by outcome</li>
-        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Roadmap co-owned with your leadership</li>
-        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Business case agreed with Finance</li>
-      </ul>
-      <div class="pillar__art" aria-hidden="true">
-        <svg class="art art--align" viewBox="0 0 220 220">
-          <path class="art__path art__path--a" d="M18 52C70 52 78 110 128 110H166" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
-          <path class="art__path art__path--b" d="M18 168C70 168 78 110 128 110H166" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
-          <circle cx="18" cy="52" r="6" fill="var(--accent)"/><circle cx="18" cy="168" r="6" fill="var(--ink)"/>
-          <g class="art__target"><circle cx="186" cy="110" r="19" fill="var(--card)" stroke="var(--accent)" stroke-width="3"/><circle cx="186" cy="110" r="6.5" fill="var(--accent)"/></g>
-        </svg>
-      </div>
-    </article>
-
-    <article class="pillar" style="--i:2">
-      <div class="pillar__main">
-        <p class="pillar__tag cap">Adopt</p>
-        <h3 class="pillar__title">Change management</h3>
-        <p class="pillar__line">We stay until the outcome is achieved.</p>
-      </div>
-      <ul class="pillar__list">
-        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Adoption tracked with your leadership</li>
-        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Incentives aligned to results</li>
-        <li><svg viewBox="0 0 20 20"><use href="#i-tick"/></svg>Your teams trained to run it</li>
-      </ul>
-      <div class="pillar__art" aria-hidden="true">
-        <svg class="art art--adopt" viewBox="0 0 220 220"><g class="art__dots"></g></svg>
-      </div>
-    </article>
-
-    <article class="pillar pillar--ink" style="--i:3">
-      <div class="pillar__main">
-        <p class="pillar__tag cap">Regulated, explainable, outcome-led</p>
-        <h3 class="pillar__title">What sets us <em>apart</em></h3>
-        <p class="pillar__line">Designed for organisations that need AI to work inside real regulatory and operational constraints.</p>
-      </div>
-      <ul class="apart">
-        <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>AI-native from day one</b><span>founded in the AI era, not retrofitted</span></div></li>
-        <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>Regulation-aware</b><span>controls are designed in, not added afterwards</span></div></li>
-        <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>Small senior teams</b><span>the people who scope the work are the people who build it</span></div></li>
-        <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>Outcome-focused</b><span>we are measured on the result, not on the hours</span></div></li>
-        <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>Fast time to value</b><span>shipping in weeks, improving every week</span></div></li>
-        <li><svg viewBox="0 0 20 20"><use href="#i-check"/></svg><div><b>No lock-in</b><span>built on your stack, and yours to run without us</span></div></li>
-      </ul>
-    </article>
-  </div>
-</section>
-
-<!-- 08 · HOW WE ENGAGE -->
-<section class="engage" id="engage" data-rail="How we engage">
-  <div class="wrap engage__grid">
-    <div class="engage__head">
-      <p class="label" data-reveal>How we engage</p>
-      <h2 class="h2" data-lines>Five stages. <em>You know what you get at each one.</em></h2>
-      <p class="body" data-reveal>We agree scope and success measures first, and tie them to a business result. Management decides at the end of each stage. No stage starts until you sign off the stage before.</p>
-    </div>
-
-    <ol class="gates" id="gates">
-      <li class="gates__spine" aria-hidden="true"><i id="gatesFill"></i></li>
-      <li class="gate">
-        <i class="gate__node" data-orb="direct-start"></i>
-        <p class="gate__k cap">Stage 1</p>
-        <h3 class="gate__title">Discover</h3>
-        <p class="gate__q">Understand the decision, the data and the constraints.</p>
-        <ul class="gate__do"><li>Map systems, data and workflows</li><li>Baseline the KPIs on your own numbers</li><li>Agree scope and success measures</li></ul>
-        <p class="gate__out"><span class="cap">You get</span>A decision brief</p>
-      </li>
-      <li class="gate">
-        <i class="gate__node" data-orb="direct"></i>
-        <p class="gate__k cap">Stage 2</p>
-        <h3 class="gate__title">Design</h3>
-        <p class="gate__q">Shape the product or solution, and its controls.</p>
-        <ul class="gate__do"><li>Read the systems and logs, not only the workshops</li><li>Co-design the target workflow with your teams</li><li>Design the controls in from the start</li></ul>
-        <p class="gate__out"><span class="cap">You get</span>A solution and control design</p>
-      </li>
-      <li class="gate">
-        <i class="gate__node" data-orb="direct"></i>
-        <p class="gate__k cap">Stage 3</p>
-        <h3 class="gate__title">Build</h3>
-        <p class="gate__q">Develop, integrate and test with your team.</p>
-        <ul class="gate__do"><li>Build inside your live systems</li><li>Backtest on history before go-live</li><li>Release every week, shaped by the users</li></ul>
-        <p class="gate__out"><span class="cap">You get</span>A working, integrated product</p>
-      </li>
-      <li class="gate">
-        <i class="gate__node" data-orb="direct"></i>
-        <p class="gate__k cap">Stage 4</p>
-        <h3 class="gate__title">Launch</h3>
-        <p class="gate__q">Go live, with security and compliance signed off.</p>
-        <ul class="gate__do"><li>Shadow mode first, then a staged rollout</li><li>Security and compliance sign-off</li><li>Train the teams that will run it</li></ul>
-        <p class="gate__out"><span class="cap">You get</span>A signed-off go-live</p>
-      </li>
-      <li class="gate">
-        <i class="gate__node" data-orb="direct"></i>
-        <p class="gate__k cap">Stage 5</p>
-        <h3 class="gate__title">Evolve</h3>
-        <p class="gate__q">Monitor, improve and extend what is in production.</p>
-        <ul class="gate__do"><li>Track adoption and value, with an owner per metric</li><li>Extend to more products, teams and entities</li><li>Hand over code and runbooks to your team</li></ul>
-        <p class="gate__out"><span class="cap">You get</span>A monitored, improving service</p>
-      </li>
-    </ol>
-  </div>
-</section>
-
-<!-- 09 · HOW WE DELIVER, WHERE WE OPERATE -->
-<section class="deliver" id="deliver" data-rail="How we deliver">
-  <div class="wrap">
-    <div class="deliver__head">
-      <p class="label" data-reveal>How we deliver</p>
-      <h2 class="h2" data-lines>On your cloud or on-prem. <em>Your data stays with you</em><i class="dot" data-orb></i></h2>
-    </div>
-    <div class="deliver__grid">
-      <div class="mode" data-reveal>
-        <h3>On cloud</h3>
-        <ul><li>In your own cloud account and region</li><li>Data stays inside your tenancy</li></ul>
-      </div>
-      <div class="mode mode--strong" data-reveal>
-        <h3>On-prem <span class="pill pill--solid">Most control</span></h3>
-        <ul><li><b>Fully gated:</b> every link passes your gates</li><li><b>Air-gapped:</b> no outside network, updates arrive offline</li><li><b>Your servers,</b> in your own data centre</li></ul>
-      </div>
-    </div>
-    <p class="label deliver__own" data-reveal>In both, you own it all</p>
-    <ul class="owns">
-      <li><b>Your models</b><span>LLMs and ML models run in your environment.</span></li>
-      <li><b>Your context</b><span>Prompts, policies and knowledge stay in your systems.</span></li>
-      <li><b>Your data</b><span>Data stays inside your organisation at every step.</span></li>
-      <li><b>Your IP</b><span>Code, models and runbooks are yours to keep.</span></li>
-    </ul>
-
-    <div class="where" id="where">
-      <div class="split-head">
-        <div>
-          <p class="label" data-reveal>Where we operate</p>
-          <h3 class="h2 h2--sm" data-lines>Headquartered in Dubai, <em>growing region by region.</em></h3>
-        </div>
-        <p class="body" data-reveal>Dubai is home to leadership, product and engineering. Its time zone reaches the Gulf, Europe, Africa and Asia in one working day. The branches below are planned. We will announce each one when it opens.</p>
-      </div>
-      <div class="arc" aria-hidden="true">
-        <svg viewBox="0 0 1000 80" preserveAspectRatio="none"><path id="arcPath" d="M100 62 C 300 6, 700 6, 900 62" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>
-        <i style="--x:10;--y:77.5"></i><i style="--x:30;--y:36"></i><i class="is-hq" style="--x:50;--y:25"></i><i style="--x:70;--y:36"></i><i style="--x:90;--y:77.5"></i>
-      </div>
-      <ul class="places">
-        <li class="place"><h4>United Kingdom</h4><p class="cap">Planned branch</p><p>European gateway, with access to the UK financial-services ecosystem.</p></li>
-        <li class="place"><h4>Iraq</h4><p class="cap">Planned branch</p><p>Local presence for the Iraqi banking and enterprise sector.</p></li>
-        <li class="place place--hq"><h4>Dubai, UAE</h4><p class="cap">Headquarters</p><p>Strategy, product, engineering and partnerships, and in-country presence for UAE institutions.</p></li>
-        <li class="place"><h4>Singapore</h4><p class="cap">Planned branch</p><p>South-East Asia hub for AI partnerships.</p></li>
-        <li class="place"><h4>APAC</h4><p class="cap">Target region</p><p>Wider Asia-Pacific market development and delivery.</p></li>
-      </ul>
-    </div>
-  </div>
 </section>
 
 <!-- 10 · TEAM -->
