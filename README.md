@@ -40,8 +40,7 @@ assets/vendor/          GSAP 3.13 (core, ScrollTrigger, SplitText), Lenis 1.3 an
 4. What is changing, then what is missing and what it takes
 5. How we work: bespoke deployment, strategic partnership, change management
 6. How we engage: five stages
-7. How we deliver, and where we operate
-8. Industries, one chapter each, with the capabilities and what we bring to
+7. Industries, one chapter each, with the capabilities and what we bring to
    them (a tag with a filled dot names an ntell product, one with a hollow dot
    is bespoke work):
    - Financial services (payments, core banking, fraud, risk,
@@ -52,6 +51,7 @@ assets/vendor/          GSAP 3.13 (core, ScrollTrigger, SplitText), Lenis 1.3 an
    - FMCG and consumer
    - M&A and value creation
    - AI transformation
+8. How we deliver, and where we operate
 9. Who builds it, and contact
 
 ## Design language

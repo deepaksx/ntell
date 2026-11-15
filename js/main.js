@@ -1563,11 +1563,11 @@
     initGap();
     initBring();
     initEngage();
-    initDeliver();
     initRowTaps();
     initIndustries();
     initWork();
     initIndustriesRest();
+    initDeliver();
     initWho();
     initContact();
     initFooter();
